@@ -1,0 +1,1025 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="dark" />
+<title>Building a Personal AI OS on a Knowledge Graph</title>
+<meta name="description" content="A technical, visual walkthrough of a personal AI OS: skills-as-apps sitting on a markdown knowledge graph in Obsidian, each personalized by the graph — the thesis, a catalog of what is built, a bi-temporal KG, how apps are built &amp; grounded, four app walkthroughs, and the model-vs-code boundary with autonomy levels." />
+<style>
+  :root{
+    --bg:#0b0d12;--bg-1:#11141b;--bg-2:#171b24;--bg-3:#1e2430;
+    --line:#283041;--line-2:#323b4e;
+    --ink:#e7ecf3;--ink-2:#aeb8c9;--ink-3:#76829a;
+    --bronze:#d8a657;--silver:#9bb0c9;--gold:#f2c14e;
+    --accent:#6ea8fe;--accent-2:#b794f6;--green:#5fd0a0;--red:#f08a8a;--orange:#ff9e64;
+    --det:#6ea8fe;--llm:#b794f6;--haiku:#54c8d6;--sonnet:#5fd0a0;--opus:#f2c14e;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --maxw:1100px;--r:12px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:72px}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.58;font-size:16px;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  code,kbd{font-family:var(--mono);font-size:.85em}
+  :not(pre)>code{background:var(--bg-3);border:1px solid var(--line);padding:.06em .38em;border-radius:5px;color:#cdd7e6;white-space:nowrap}
+  h1,h2,h3,h4{line-height:1.18;font-weight:650;letter-spacing:-0.01em}
+  h2{font-size:1.7rem;margin:0 0 .15em}h3{font-size:1.18rem;margin:1.6em 0 .4em}
+  h4{font-size:.95rem;margin:1.2em 0 .35em;color:var(--ink)}
+  p{margin:.6em 0;color:var(--ink-2)}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  nav{position:sticky;top:0;z-index:50;background:rgba(11,13,18,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;gap:16px;height:56px}
+  nav .brand{font-weight:700;letter-spacing:-0.02em;font-size:.92rem;color:var(--ink);white-space:nowrap}
+  nav .brand .dot{color:var(--gold)}
+  nav .links{display:flex;gap:1px;margin-left:auto;flex-wrap:wrap}
+  nav .links a{color:var(--ink-3);font-size:.78rem;padding:5px 9px;border-radius:7px;transition:.15s}
+  nav .links a:hover{color:var(--ink);text-decoration:none;background:var(--bg-2)}
+  nav .links a.active{color:var(--ink);background:var(--bg-3)}
+  @media(max-width:1000px){nav .links{margin-left:auto;max-width:64%;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}nav .links::-webkit-scrollbar{display:none}nav .links a{white-space:nowrap}}
+  .tier:focus-visible,.stage:focus-visible,.tab:focus-visible,.bitemp .yr:focus-visible,.kgnode:focus-visible,nav .links a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+  header.hero{padding:64px 0 30px;background:radial-gradient(900px 380px at 82% -10%,rgba(110,168,254,.10),transparent),radial-gradient(680px 340px at 0% 0%,rgba(242,193,78,.07),transparent)}
+  .eyebrow{font-family:var(--mono);font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+  header.hero h1{font-size:clamp(2rem,5vw,3.1rem);margin:0 0 .35em;max-width:19ch}
+  header.hero .lede{font-size:1.18rem;color:var(--ink-2);max-width:64ch}
+  .statline{display:flex;flex-wrap:wrap;gap:26px;margin-top:26px}
+  .stat .n{font-size:1.6rem;font-weight:700;color:var(--ink);font-family:var(--mono)}
+  .stat .l{font-size:.76rem;color:var(--ink-3)}
+
+  section{padding:54px 0;border-bottom:1px solid var(--line)}
+  section>.wrap>.kicker{font-family:var(--mono);font-size:.76rem;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px}
+  .lead{font-size:1.05rem;color:var(--ink-2);max-width:72ch}
+
+  .clickhint{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.7rem;color:var(--accent);background:rgba(110,168,254,.08);border:1px solid rgba(110,168,254,.3);border-radius:999px;padding:3px 10px;margin:10px 0}
+  .clickhint::before{content:"\25C9"}
+
+  .grid{display:grid;gap:14px;margin:22px 0}
+  .g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:760px){.g2,.g3{grid-template-columns:1fr}}
+  .card{background:var(--bg-1);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
+  .card h4{margin-top:0}.card .ico{font-size:1.25rem}
+  .muted{color:var(--ink-3);font-size:.88rem}
+
+  .svgbox{background:var(--bg-1);border:1px solid var(--line);border-radius:var(--r);padding:10px;margin:20px 0;overflow-x:auto}
+  .svgbox svg{display:block;width:100%;height:auto}
+  .svgbox.wide svg{min-width:880px}.svgbox.med svg{min-width:700px}
+
+  .principles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0 0}
+  @media(max-width:860px){.principles{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.principles{grid-template-columns:1fr}}
+  .principle{border-top:2px solid var(--accent);background:var(--bg-1);border-radius:0 0 10px 10px;padding:11px 14px}
+  .principle b{color:var(--ink);display:block;font-size:.9rem;margin-bottom:2px}
+  .principle span{font-size:.8rem;color:var(--ink-3)}
+  .principle.p2{border-color:var(--gold)}.principle.p3{border-color:var(--accent-2)}.principle.p4{border-color:var(--green)}
+
+  .teaser{display:flex;align-items:center;gap:16px;background:linear-gradient(90deg,rgba(110,168,254,.07),transparent);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 18px;margin:18px 0 0}
+  .teaser .t1{font-weight:650;color:var(--ink);font-size:.95rem}
+  .teaser p{margin:2px 0 0;font-size:.84rem}
+  .teaser a{white-space:nowrap;font-family:var(--mono);font-size:.8rem}
+
+  .obwin{border:1px solid var(--line-2);border-radius:10px;overflow:hidden;background:#0e1016;margin:20px 0;box-shadow:0 20px 50px -30px rgba(0,0,0,.9)}
+  .obbar{display:flex;align-items:center;gap:7px;padding:9px 12px;background:#15171f;border-bottom:1px solid var(--line)}
+  .obbar i{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .obbar .r{background:#ff5f57}.obbar .y{background:#febc2e}.obbar .g{background:#28c840}
+  .obbar .ttl{margin-left:10px;font-size:.76rem;color:var(--ink-3);font-family:var(--mono)}
+  .obbody{display:grid;grid-template-columns:200px 1fr;min-height:300px}
+  @media(max-width:680px){.obbody{grid-template-columns:1fr}.obtree{display:none}}
+  .obtree{background:#0c0e14;border-right:1px solid var(--line);padding:12px 8px;font-size:.78rem;font-family:var(--mono)}
+  .obtree .grp{color:var(--ink-3);margin:8px 0 3px;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em}
+  .obtree .f{padding:3px 8px;border-radius:6px;color:var(--ink-2)}
+  .obtree .f.dir{color:var(--ink)}.obtree .f.on{background:var(--bg-3);color:var(--ink)}
+  .obtree .ind{padding-left:18px}
+  .obnote{padding:18px 22px;overflow-x:auto}
+  .obnote .fm{background:#0a0c11;border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-family:var(--mono);font-size:.76rem;line-height:1.5;color:#c6d0e0;white-space:pre}
+  .obnote .nt{font-size:1.05rem;margin:14px 0 4px;color:var(--ink);font-weight:650}
+  .obnote p{font-size:.86rem;margin:5px 0}.obnote .wl{color:var(--accent)}
+
+  pre{background:#0a0c11;border:1px solid var(--line);border-radius:10px;padding:15px 17px;overflow-x:auto;margin:14px 0;font-size:.81rem;line-height:1.5}
+  pre code{color:#c6d0e0;white-space:pre}
+  .codecap{font-family:var(--mono);font-size:.72rem;color:var(--ink-3);margin:14px 0 -7px}
+  .k{color:#7aa2f7}.s{color:#9ece6a}.c{color:#5a6477;font-style:italic}.t{color:#e0af68}.n2{color:#ff9e64}
+
+  .mtitle{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  .medallion{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:stretch;gap:8px;margin:14px 0 8px}
+  @media(max-width:760px){.medallion{grid-template-columns:1fr}.medallion .farrow{display:none}}
+  .farrow{display:flex;align-items:center;color:var(--ink-3);font-size:1.4rem}
+  .tier{border:1px solid var(--line);border-radius:var(--r);background:var(--bg-1);padding:16px 16px 14px;cursor:pointer;transition:.13s;position:relative;overflow:hidden}
+  .tier:hover{transform:translateY(-3px);border-color:var(--line-2);box-shadow:0 12px 30px -22px rgba(0,0,0,.9)}
+  .tier.sel{background:var(--bg-2)}
+  .tier::before{content:"";position:absolute;left:0;top:0;height:3px;width:100%}
+  .tier.bronze::before{background:var(--bronze)}.tier.silver::before{background:var(--silver)}.tier.gold::before{background:var(--gold)}
+  .tier.bronze.sel{border-color:var(--bronze)}.tier.silver.sel{border-color:var(--silver)}.tier.gold.sel{border-color:var(--gold)}
+  .tier .tname{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+  .tier.bronze .tname{color:var(--bronze)}.tier.silver .tname{color:var(--silver)}.tier.gold .tname{color:var(--gold)}
+  .tier .tname .plus{color:var(--ink-3);font-size:.9rem}.tier.sel .tname .plus{color:var(--ink)}
+  .tier h4{margin:5px 0 3px}.tier p{font-size:.84rem;margin:3px 0 0}
+  .tier .path{font-family:var(--mono);font-size:.7rem;color:var(--ink-3);margin-top:8px;word-break:break-all}
+  .tierdetail{background:var(--bg-1);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin-top:4px}
+  .tierdetail h4{margin-top:0}
+  .tierdetail .meta{display:flex;flex-wrap:wrap;gap:16px;margin-top:10px;font-size:.8rem}
+  .tierdetail .meta div span{color:var(--ink-3);display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em}
+  .tierdetail .meta div b{color:var(--ink);font-family:var(--mono);font-weight:500}
+
+  .pipe{display:flex;flex-wrap:wrap;gap:0;margin:18px 0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+  .pipe .step{flex:1 1 0;min-width:118px;padding:13px;border-right:1px solid var(--line);background:var(--bg-1)}
+  .pipe .step:last-child{border-right:none}
+  .pipe .step .num{font-family:var(--mono);font-size:.7rem;color:var(--accent)}
+  .pipe .step .nm{font-weight:600;font-size:.85rem;margin:3px 0}.pipe .step .ds{font-size:.74rem;color:var(--ink-3)}
+
+  .stages{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:14px 0 6px}
+  @media(max-width:760px){.stages{grid-template-columns:repeat(2,1fr)}}
+  .stage{background:var(--bg-1);border:1px solid var(--line);border-radius:9px;padding:11px 8px;text-align:center;cursor:pointer;transition:.12s}
+  .stage:hover{border-color:var(--line-2);transform:translateY(-2px)}
+  .stage.sel{border-color:var(--accent);background:var(--bg-3)}
+  .stage .sn{font-family:var(--mono);color:var(--ink-3);font-size:.64rem}.stage.sel .sn{color:var(--accent)}
+  .stage .st{font-size:.76rem;font-weight:600;margin-top:2px}
+  .stagedetail{background:var(--bg-1);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-top:4px;font-size:.9rem}
+  .stagedetail h4{margin:0 0 4px}
+
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.85rem}
+  th,td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--ink-3);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+  td{color:var(--ink-2)}td b,td strong{color:var(--ink)}tr:last-child td{border-bottom:none}
+
+  .tabs{display:flex;gap:8px;margin:8px 0 0;flex-wrap:wrap}
+  .tab{font-family:var(--mono);font-size:.86rem;padding:10px 16px;border-radius:9px;background:var(--bg-1);border:1px solid var(--line);color:var(--ink-2);cursor:pointer;transition:.15s}
+  .tab .sub{display:block;font-family:var(--sans);font-size:.71rem;color:var(--ink-3);margin-top:1px}
+  .tab:hover{border-color:var(--accent);color:var(--ink);transform:translateY(-2px)}
+  .tab.active{background:var(--bg-3);border-color:var(--accent);color:var(--ink)}
+  .tab.active .sub{color:var(--ink-2)}
+  .panel{display:none;margin-top:20px;animation:fade .25s ease}.panel.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  details.run{border:1px solid var(--line);border-radius:10px;margin:9px 0;background:var(--bg-1);overflow:hidden}
+  details.run>summary{cursor:pointer;padding:12px 15px;font-weight:600;font-size:.9rem;list-style:none;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  details.run>summary::-webkit-details-marker{display:none}
+  details.run>summary .chev{color:var(--ink-3);transition:.15s;font-family:var(--mono)}
+  details.run[open]>summary .chev{transform:rotate(90deg)}
+  details.run>summary .stagetag{font-family:var(--mono);font-size:.66rem;color:var(--bg);background:var(--accent);padding:2px 7px;border-radius:5px;white-space:nowrap}
+  .stagetag.s1{background:var(--silver)}.stagetag.s2{background:var(--accent)}.stagetag.s3{background:var(--accent-2)}.stagetag.s4{background:var(--gold)}.stagetag.s5{background:var(--green)}
+  details.run .body{padding:0 15px 14px 40px;color:var(--ink-2);font-size:.88rem}
+  details.run .body p{margin:.3em 0}
+
+  .lc{font-family:var(--mono);font-size:.62rem;padding:2px 6px;border-radius:5px;border:1px solid;white-space:nowrap;font-weight:600}
+  .lc.det{color:var(--det);border-color:rgba(110,168,254,.4);background:rgba(110,168,254,.08)}
+  .lc.llm{color:var(--llm);border-color:rgba(183,148,246,.4);background:rgba(183,148,246,.08)}
+  .mt{font-family:var(--mono);font-size:.6rem;padding:2px 6px;border-radius:5px;border:1px solid var(--line-2);white-space:nowrap}
+  .mt.haiku{color:var(--haiku)}.mt.sonnet{color:var(--sonnet)}.mt.opus{color:var(--opus)}
+  .badgelegend{display:flex;flex-wrap:wrap;gap:16px;align-items:center;background:var(--bg-1);border:1px solid var(--line);border-radius:10px;padding:11px 15px;margin:12px 0;font-size:.78rem;color:var(--ink-3)}
+  .badgelegend .grp{display:flex;gap:6px;align-items:center}
+
+  .callout{border:1px solid var(--line);border-left:3px solid var(--gold);background:var(--bg-1);border-radius:0 10px 10px 0;padding:13px 17px;margin:16px 0}
+  .callout.why{border-left-color:var(--accent)}
+  .callout .lab{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+  .callout.why .lab{color:var(--accent)}
+  .callout p{margin:5px 0 0;color:var(--ink-2);font-size:.88rem}
+
+  .mechgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+  @media(max-width:760px){.mechgrid{grid-template-columns:1fr}}
+  .mech{background:var(--bg-1);border:1px solid var(--line);border-radius:10px;padding:15px 17px}
+  .mech h4{margin:0 0 5px;color:var(--ink)}.mech p{font-size:.84rem;margin:0}
+
+  .quote{border-left:2px solid var(--line-2);padding-left:15px;margin:14px 0;color:var(--ink-2);font-style:italic;font-size:.92rem}
+  .quote cite{display:block;font-style:normal;font-size:.74rem;color:var(--ink-3);margin-top:5px}
+
+  .story{background:linear-gradient(180deg,var(--bg-2),var(--bg-1));border:1px solid var(--line-2);border-radius:var(--r);padding:20px 22px;margin:14px 0 18px;position:relative}
+  .story::before{content:"CASE STUDY";position:absolute;top:13px;right:17px;font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;color:var(--ink-3)}
+  .story h4{margin:0 0 3px;font-size:1.05rem;color:var(--ink)}
+  .story .sub{font-size:.76rem;color:var(--gold);font-family:var(--mono);margin-bottom:8px}
+  .story p{font-size:.9rem;margin:.45em 0}.story .punch{color:var(--ink);font-weight:600}
+
+  .bitemp{background:var(--bg-1);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin:18px 0}
+  .bitemp .ctrls{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .bitemp .yr{font-family:var(--mono);font-size:.8rem;padding:7px 13px;border-radius:8px;border:1px solid var(--line);background:var(--bg-2);color:var(--ink-2);cursor:pointer}
+  .bitemp .yr.on{border-color:var(--accent);color:var(--ink);background:var(--bg-3)}
+  .bitemp .factrow{font-family:var(--mono);font-size:.8rem;padding:7px 10px;border-radius:7px;border:1px solid transparent;color:var(--ink-3)}
+  .bitemp .factrow.live{color:var(--green);background:rgba(95,208,160,.07);border-color:rgba(95,208,160,.25)}
+  .bitemp .factrow.expired{color:var(--ink-3);text-decoration:line-through;opacity:.6}
+  .bitemp .answer{margin-top:12px;font-size:.9rem}.bitemp .answer b{color:var(--ink);font-family:var(--mono)}
+
+  .kgwrap{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin:20px 0;align-items:start}
+  @media(max-width:820px){.kgwrap{grid-template-columns:1fr}}
+  .kgsvg{background:var(--bg-1);border:1px solid var(--line);border-radius:var(--r);width:100%;height:auto;display:block}
+  .kgnode{cursor:pointer}.kgnode circle{transition:.15s}.kgnode:hover circle{stroke-width:2.5}
+  .kgnode text{font-family:var(--sans);font-size:11px;fill:var(--ink-2);pointer-events:none}
+  .kgnode.sel circle{stroke-width:3}
+  .kgdetail{background:var(--bg-1);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;min-height:190px}
+  .kgdetail h4{margin:0 0 2px}.kgdetail .et{font-family:var(--mono);font-size:.68rem;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
+  .kgdetail .fct{font-family:var(--mono);font-size:.76rem;padding:5px 0;border-bottom:1px solid var(--line);color:var(--ink-2)}
+  .kgdetail .fct .pk{color:var(--accent)}.kgdetail .fct.exp{opacity:.5;text-decoration:line-through}
+  .kglegend{display:flex;gap:14px;flex-wrap:wrap;font-size:.76rem;color:var(--ink-3);margin-top:6px}
+  .kglegend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
+
+  .busgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+  @media(max-width:760px){.busgrid{grid-template-columns:1fr}}
+  .bk{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--bg-1)}
+  .bk .bn{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase}
+  .bk.cmd .bn{color:var(--accent)}.bk.evt .bn{color:var(--green)}.bk.st .bn{color:var(--gold)}
+  .bk h4{margin:4px 0 5px}.bk p{font-size:.8rem;margin:0}
+  .bk.cmd{border-color:rgba(110,168,254,.35)}.bk.evt{border-color:rgba(95,208,160,.3)}.bk.st{border-color:rgba(242,193,78,.3)}
+
+  .connkey{display:flex;gap:12px;flex-wrap:wrap;font-size:.76rem;color:var(--ink-3);margin:8px 0}
+  .rbadge{font-family:var(--mono);font-size:.62rem;padding:1px 6px;border-radius:4px;border:1px solid var(--line-2)}
+
+  .forge{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+  @media(max-width:680px){.forge{grid-template-columns:1fr}}
+  .forge .ph{background:var(--bg-1);border:1px solid var(--line);border-radius:10px;padding:14px 16px;position:relative}
+  .forge .ph .n{font-family:var(--mono);font-size:.66rem;color:var(--accent-2)}
+  .forge .ph h4{margin:3px 0 4px}.forge .ph p{font-size:.82rem;margin:0}
+  .forge .ph:not(:last-child)::after{content:"\2192";position:absolute;right:-13px;top:50%;transform:translateY(-50%);color:var(--ink-3);font-size:1.15rem;z-index:1}
+  @media(max-width:680px){.forge .ph:not(:last-child)::after{content:"\2193";right:auto;left:50%;top:auto;bottom:-15px;transform:translateX(-50%)}}
+
+  .fmap td:first-child{color:var(--ink);font-weight:600;white-space:nowrap}
+  .badge{font-family:var(--mono);font-size:.66rem;padding:2px 7px;border-radius:5px;border:1px solid var(--line-2);color:var(--ink-3)}
+
+
+  /* platform / layer diagram */
+  .platsvg{min-width:760px}
+  .pcards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:18px 0 0}
+  @media(max-width:760px){.pcards{grid-template-columns:1fr}}
+
+  /* catalog: anchored bento + clustered directory */
+  .bento{display:grid;grid-template-columns:1.55fr 1fr 1fr;gap:14px;margin:16px 0 6px}
+  @media(max-width:860px){.bento{grid-template-columns:1fr}}
+  .btile{background:linear-gradient(180deg,var(--bg-2),var(--bg-1));border:1px solid var(--line-2);border-radius:var(--r);padding:18px 20px;position:relative}
+  .btile.feat{border-color:rgba(242,193,78,.42)}
+  .btile .tag{font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  .btile h4{margin:6px 0 4px;font-size:1.02rem;color:var(--ink)}
+  .btile p{font-size:.85rem;margin:.4em 0}
+  .btile .reads{font-family:var(--mono);font-size:.66rem;color:var(--ink-3);margin-top:9px}
+  .btile .reads b{color:var(--silver);font-weight:500}
+  .btile a{font-family:var(--mono);font-size:.74rem;white-space:nowrap}
+  .btile .punch{color:var(--ink);font-weight:600}
+
+  .cluster{margin:22px 0 0}
+  .cluster .ch{font-family:var(--mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin:0 0 9px;display:flex;align-items:center;gap:10px}
+  .cluster .ch::after{content:"";flex:1;height:1px;background:var(--line)}
+  .acat{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media(max-width:860px){.acat{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.acat{grid-template-columns:1fr}}
+  .scard{background:var(--bg-1);border:1px solid var(--line);border-radius:10px;padding:12px 13px;display:flex;flex-direction:column}
+  .scard .sk{font-family:var(--mono);font-size:.82rem;color:var(--ink);font-weight:600}
+  .scard .sd{font-size:.78rem;color:var(--ink-2);margin:3px 0 7px;flex:1}
+  .scard .meta{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .scard .reads{font-family:var(--mono);font-size:.61rem;color:var(--ink-3)}
+  .scard .reads b{color:var(--silver);font-weight:500}
+  .ab{font-family:var(--mono);font-size:.57rem;padding:2px 6px;border-radius:5px;border:1px solid var(--line-2);white-space:nowrap;text-transform:uppercase;letter-spacing:.03em}
+  .ab.read{color:var(--ink-3)}
+  .ab.draft{color:var(--det);border-color:rgba(110,168,254,.4)}
+  .ab.send{color:var(--green);border-color:rgba(95,208,160,.4)}
+  .ab.sched{color:var(--gold);border-color:rgba(242,193,78,.4)}
+  .catnote{font-size:.8rem;color:var(--ink-3);margin-top:20px}
+  .ablegend{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:14px 0 0;font-size:.76rem;color:var(--ink-3)}
+
+  footer{padding:44px 0 64px;color:var(--ink-3);font-size:.84rem}
+  footer .wrap{display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between}
+  .disc{max-width:62ch}.tocb{font-family:var(--mono);font-size:.68rem;color:var(--ink-3)}
+
+  .reveal{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .5s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+    *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+    .reveal{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <span class="brand">Personal AI OS <span class="dot">/</span> a worked example</span>
+    <span class="links">
+      <a href="#platform">Idea</a><a href="#catalog">Apps</a><a href="#kg">Graph</a>
+      <a href="#skills">Anatomy</a><a href="#build">Build</a><a href="#examples">Examples</a>
+      <a href="#reliability">Reliability</a><a href="#substrate">Substrate</a><a href="#contracts">Contracts</a>
+    </span>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">A knowledge graph in Obsidian · an OS of skills on top</div>
+    <h1>An AI OS where every skill is personalized by one knowledge graph</h1>
+    <p class="lede">Off-the-shelf assistants are amnesiac — they ask you everything, every time. This is an OS of 42 apps sitting on a markdown knowledge graph of one person's life, so each app is personalized by the facts it reads: your voice, your history, your relationships. Here's the whole system on one page — what's built, the graph underneath, and exactly where the model thinks versus where code decides.</p>
+    <div class="statline">
+      <div class="stat"><div class="n">42</div><div class="l">apps · 23 on the chassis</div></div>
+      <div class="stat"><div class="n">~80%</div><div class="l">of substeps are deterministic</div></div>
+      <div class="stat"><div class="n">35</div><div class="l">harness hooks · 5 events</div></div>
+      <div class="stat"><div class="n">53</div><div class="l">research docs · drift-tracked</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- PLATFORM / THESIS -->
+<section id="platform">
+  <div class="wrap reveal">
+    <div class="kicker">The idea in one picture</div>
+    <h2>Generic skills become personal when they sit on your graph</h2>
+    <p class="lead">That amnesia is the problem these apps solve. They sit on top of a <b style="color:var(--silver)">knowledge graph of one person's life</b>: people, history, voice, health, finances, all as queryable facts. So the <em>same</em> app code comes out personalized: <code>/forms</code> fills the citizenship application from histories the graph already holds, <code>/draft</code> writes in your voice to this exact person, <code>/friends</code> knows which friendships you're letting slip. Facts are pulled (bronze), parsed into the graph (silver), then projected into the views you read (gold); that pipeline is detailed at the end. What matters first: every app reads one shared graph.</p>
+    <div class="svgbox wide">
+      <svg class="platsvg" viewBox="0 0 920 384" role="img" aria-label="Skills sitting on top of one shared knowledge graph, each reading the specific facts it needs to personalize its work" font-family="-apple-system,'Segoe UI',Roboto,sans-serif">
+        <defs><marker id="pdn" markerWidth="8" markerHeight="8" refX="3" refY="5" orient="auto"><path d="M0,0 L6,0 L3,6 Z" fill="#5a6477"/></marker></defs>
+        <text x="24" y="38" fill="#76829a" font-size="10.5" font-family="ui-monospace,monospace">APPS — same code, each personalized by what it reads</text>
+        <!-- skill tiles -->
+        <g font-family="ui-monospace,monospace" font-size="11.5">
+          <rect x="34" y="54" width="116" height="46" rx="9" fill="#13151c" stroke="#6ea8fe"/><text x="92" y="82" text-anchor="middle" fill="#e7ecf3">/forms</text>
+          <rect x="182" y="54" width="116" height="46" rx="9" fill="#13151c" stroke="#5fd0a0"/><text x="240" y="82" text-anchor="middle" fill="#e7ecf3">/events</text>
+          <rect x="330" y="54" width="116" height="46" rx="9" fill="#13151c" stroke="#9bb0c9"/><text x="388" y="82" text-anchor="middle" fill="#e7ecf3">/friends</text>
+          <rect x="478" y="54" width="116" height="46" rx="9" fill="#13151c" stroke="#b794f6"/><text x="536" y="82" text-anchor="middle" fill="#e7ecf3">/draft</text>
+          <rect x="626" y="54" width="116" height="46" rx="9" fill="#13151c" stroke="#ff9e64"/><text x="684" y="82" text-anchor="middle" fill="#e7ecf3">/job-search</text>
+          <rect x="774" y="54" width="116" height="46" rx="9" fill="#13151c" stroke="#f2c14e"/><text x="832" y="82" text-anchor="middle" fill="#e7ecf3">/shopping</text>
+        </g>
+        <!-- what each reads -->
+        <g font-size="8.5" fill="#76829a" font-family="ui-monospace,monospace">
+          <text x="92" y="118" text-anchor="middle">travel · jobs · address</text>
+          <text x="240" y="118" text-anchor="middle">people · dates</text>
+          <text x="388" y="118" text-anchor="middle">layer · last contact</text>
+          <text x="536" y="118" text-anchor="middle">voice · recipient</text>
+          <text x="684" y="118" text-anchor="middle">pipeline · contacts</text>
+          <text x="832" y="118" text-anchor="middle">priors · benefits</text>
+        </g>
+        <!-- connectors down into the graph -->
+        <g stroke="#323b4e" stroke-width="1.3">
+          <line x1="92" y1="128" x2="92" y2="246" stroke="#323b4e" marker-end="url(#pdn)"/>
+          <line x1="240" y1="128" x2="240" y2="246" stroke="#323b4e" marker-end="url(#pdn)"/>
+          <line x1="388" y1="128" x2="388" y2="246" stroke="#323b4e" marker-end="url(#pdn)"/>
+          <line x1="536" y1="128" x2="536" y2="246" stroke="#323b4e" marker-end="url(#pdn)"/>
+          <line x1="684" y1="128" x2="684" y2="246" stroke="#323b4e" marker-end="url(#pdn)"/>
+          <line x1="832" y1="128" x2="832" y2="246" stroke="#323b4e" marker-end="url(#pdn)"/>
+        </g>
+        <!-- the graph slab -->
+        <rect x="24" y="250" width="872" height="104" rx="14" fill="rgba(155,176,201,.07)" stroke="rgba(155,176,201,.5)"/>
+        <text x="460" y="276" text-anchor="middle" fill="#9bb0c9" font-size="13" font-family="ui-monospace,monospace">THE KNOWLEDGE GRAPH</text>
+        <text x="460" y="294" text-anchor="middle" fill="#76829a" font-size="9.5">your life as queryable facts — people · relationships · history · voice · health · finances</text>
+        <text x="460" y="318" text-anchor="middle" fill="#aeb8c9" font-size="9" font-family="ui-monospace,monospace">[[Priya Kapoor]]  employer=Meridian · layer=15 · voice ✓ · last_seen=18d</text>
+        <text x="460" y="335" text-anchor="middle" fill="#aeb8c9" font-size="9" font-family="ui-monospace,monospace">[[You]]  addresses[5y] · employers[] · trips_abroad[] · biographic[]</text>
+        <text x="460" y="372" text-anchor="middle" fill="#76829a" font-size="10">Swap the graph for someone else's and every app personalizes to them — the skill code never changes.</text>
+      </svg>
+    </div>
+    <div class="pcards">
+      <div class="card"><div class="ico">🔁</div><h4>No per-app memory</h4><p class="muted">Apps don't each keep a private store. They read and write one graph, so a fact one app learns — a friend's new job — is instantly true for every other.</p></div>
+      <div class="card"><div class="ico">🧬</div><h4>Personalization is data, not prompts</h4><p class="muted">The same <code>/draft</code> logic sounds like you because your voice profile lives in the graph, not because it was told who you are this session.</p></div>
+    </div>
+  </div>
+</section>
+<!-- CATALOG -->
+<section id="catalog">
+  <div class="wrap reveal">
+    <div class="kicker">What's been built</div>
+    <h2>Apps across a whole life, not a framework demo</h2>
+    <p class="lead">A system in daily use, not a toy. Three apps in depth, then the full catalog grouped by life domain — each card notes the facts it reads and how autonomously it acts.</p>
+
+    <div class="bento">
+      <div class="btile feat">
+        <div class="tag">Identity &amp; legal · /forms + /n400-research</div>
+        <h4>The citizenship application you don't fill out</h4>
+        <p>The N-400 runs ~20 pages and ~490 fields. The histories already live in the graph, so the app maps each field, asks only for the genuine handful it can't fill, and stops at submit. <span class="punch">You don't fill the form; you confirm it.</span></p>
+        <div class="reads">reads: <b>travel · employment · address · biographic history</b></div>
+        <a href="#examples" data-goto="forms">see the run ↓</a>
+      </div>
+      <div class="btile">
+        <div class="tag">Family · /events</div>
+        <h4>Never miss a date that matters</h4>
+        <p>Birthdays, anniversaries, memorials — surfaced with who the person is and how you're connected, early enough to actually act. The graph holds the relationships; this watches the calendar against them.</p>
+        <div class="reads">reads: <b>relationships · recurring dates</b></div>
+        <a href="#examples" data-goto="events">see the run ↓</a>
+      </div>
+      <div class="btile">
+        <div class="tag">Infra · /bronze + weekly reviews</div>
+        <h4>What runs on its own</h4>
+        <p>Most apps are deliberately on-demand. But data pulls and the weekly reviews fire on a schedule, and a ladder decides what acts without asking. Automation where it's safe, a gate where it isn't.</p>
+        <div class="reads">reads: <b>source freshness · autonomy policy</b></div>
+        <a href="#reliability">how autonomy works ↓</a>
+      </div>
+    </div>
+
+    <div class="cluster">
+      <div class="ch">Identity &amp; legal</div>
+      <div class="acat">
+        <div class="scard"><div class="sk">/forms</div><div class="sd">Fill any web or PDF form, halt at submit.</div><div class="meta"><span class="reads">reads: <b>stored answers · history</b></span><span class="ab draft">draft</span></div></div>
+        <div class="scard"><div class="sk">/n400-research</div><div class="sd">Build travel, residence &amp; employment histories.</div><div class="meta"><span class="reads">reads: <b>trips · addresses · jobs</b></span><span class="ab read">read</span></div></div>
+      </div>
+    </div>
+
+    <div class="cluster">
+      <div class="ch">Family &amp; kids</div>
+      <div class="acat">
+        <div class="scard"><div class="sk">/events</div><div class="sd">Acknowledgement-worthy dates, surfaced in time.</div><div class="meta"><span class="reads">reads: <b>relationships · dates</b></span><span class="ab read">read</span></div></div>
+        <div class="scard"><div class="sk">/school</div><div class="sd">Monitor your kid's school information.</div><div class="meta"><span class="reads">reads: <b>school calendar · contacts</b></span><span class="ab read">read</span></div></div>
+        <div class="scard"><div class="sk">/family</div><div class="sd">Extended-family graph, logistics &amp; concerns.</div><div class="meta"><span class="reads">reads: <b>relatives · employers</b></span><span class="ab read">read</span></div></div>
+        <div class="scard"><div class="sk">/household</div><div class="sd">Reconcile and run the family todo list.</div><div class="meta"><span class="reads">reads: <b>tasks · calendar · mail</b></span><span class="ab draft">draft</span></div></div>
+        <div class="scard"><div class="sk">/health</div><div class="sd">Household health records; flag overdue care.</div><div class="meta"><span class="reads">reads: <b>providers · labs · visits</b></span><span class="ab draft">draft</span></div></div>
+        <div class="scard"><div class="sk">/biometrics</div><div class="sd">Personal biometric trends &amp; anomalies.</div><div class="meta"><span class="reads">reads: <b>Apple Health series</b></span><span class="ab read">read</span></div></div>
+      </div>
+    </div>
+
+    <div class="cluster">
+      <div class="ch">Relationships</div>
+      <div class="acat">
+        <div class="scard"><div class="sk">/friends</div><div class="sd">Friend-graph cadence across Dunbar layers.</div><div class="meta"><span class="reads">reads: <b>layer · last contact</b></span><span class="ab draft">draft</span></div></div>
+      </div>
+    </div>
+
+    <div class="cluster">
+      <div class="ch">Career</div>
+      <div class="acat">
+        <div class="scard"><div class="sk">/job-search</div><div class="sd">Pipeline review across every source.</div><div class="meta"><span class="reads">reads: <b>pipeline · contacts · companies</b></span><span class="ab draft">draft</span></div></div>
+        <div class="scard"><div class="sk">/job-search-coaching</div><div class="sd">Cross-loop interview coaching synthesis.</div><div class="meta"><span class="reads">reads: <b>debriefs · loops</b></span><span class="ab read">read</span></div></div>
+        <div class="scard"><div class="sk">/company-intel</div><div class="sd">Per-company research substrate.</div><div class="meta"><span class="reads">reads: <b>orgs · roles</b></span><span class="ab read">read</span></div></div>
+        <div class="scard"><div class="sk">/prep</div><div class="sd">Interview-prep cockpit readiness audit.</div><div class="meta"><span class="reads">reads: <b>companies · prep docs</b></span><span class="ab read">read</span></div></div>
+      </div>
+    </div>
+
+    <div class="cluster">
+      <div class="ch">Comms &amp; outbound</div>
+      <div class="acat">
+        <div class="scard"><div class="sk">/draft</div><div class="sd">Voice-matched outbound hub; every app sends through it.</div><div class="meta"><span class="reads">reads: <b>recipient · per-channel voice</b></span><span class="ab send">send</span></div></div>
+        <div class="scard"><div class="sk">/x-campaign</div><div class="sd">Manage an X post queue in your voice.</div><div class="meta"><span class="reads">reads: <b>exemplars · queue</b></span><span class="ab send">send</span></div></div>
+        <div class="scard"><div class="sk">/inbox</div><div class="sd">Track inbound obligations you owe a reply.</div><div class="meta"><span class="reads">reads: <b>threads · obligations</b></span><span class="ab read">read</span></div></div>
+      </div>
+    </div>
+
+    <div class="cluster">
+      <div class="ch">Decisions &amp; life-admin</div>
+      <div class="acat">
+        <div class="scard"><div class="sk">/shopping</div><div class="sd">Deep purchase research that compounds its priors.</div><div class="meta"><span class="reads">reads: <b>decision priors · benefits</b></span><span class="ab read">read</span></div></div>
+        <div class="scard"><div class="sk">/plan-week</div><div class="sd">Mon–Sun schedule scaffold from vault + calendar.</div><div class="meta"><span class="reads">reads: <b>calendar · anchors</b></span><span class="ab read">read</span></div></div>
+        <div class="scard"><div class="sk">/roadmap</div><div class="sd">Drift sweep over the side-project roadmap.</div><div class="meta"><span class="reads">reads: <b>project state · git</b></span><span class="ab read">read</span></div></div>
+      </div>
+    </div>
+
+    <div class="cluster">
+      <div class="ch">Knowledge graph &amp; infra</div>
+      <div class="acat">
+        <div class="scard"><div class="sk">/bronze</div><div class="sd">Orchestrates every external data pull.</div><div class="meta"><span class="reads">reads: <b>source state</b></span><span class="ab sched">scheduled</span></div></div>
+        <div class="scard"><div class="sk">/kg-sweep</div><div class="sd">Extraction sweep over sources → triage.</div><div class="meta"><span class="reads">reads: <b>declared sources</b></span><span class="ab sched">scheduled</span></div></div>
+        <div class="scard"><div class="sk">/ingest</div><div class="sd">Centralized KG triage + inspection.</div><div class="meta"><span class="reads">reads: <b>capture queue</b></span><span class="ab read">read</span></div></div>
+        <div class="scard"><div class="sk">/groom</div><div class="sd">KG grooming: aliases, thresholds, archive.</div><div class="meta"><span class="reads">reads: <b>entities · aliases</b></span><span class="ab sched">scheduled</span></div></div>
+        <div class="scard"><div class="sk">/research</div><div class="sd">Frontier-depth, fact-checked research dispatch.</div><div class="meta"><span class="reads">reads: <b>research graph</b></span><span class="ab read">read</span></div></div>
+        <div class="scard"><div class="sk">/journal-ingest</div><div class="sd">Route a journal entry into the graph.</div><div class="meta"><span class="reads">reads: <b>journal text</b></span><span class="ab read">read</span></div></div>
+        <div class="scard"><div class="sk">/forge</div><div class="sd">The skill-authoring factory (Scope→Design→Materialize).</div><div class="meta"><span class="reads">reads: <b>the fleet · research</b></span><span class="ab read">read</span></div></div>
+        <div class="scard"><div class="sk">/audit</div><div class="sd">Foundation-alignment drift sweep across skills.</div><div class="meta"><span class="reads">reads: <b>skills · KG</b></span><span class="ab sched">scheduled</span></div></div>
+        <div class="scard"><div class="sk">/system-review</div><div class="sd">Quarterly architectural review.</div><div class="meta"><span class="reads">reads: <b>skills · state</b></span><span class="ab sched">scheduled</span></div></div>
+      </div>
+    </div>
+
+    <div class="ablegend">
+      <span><span class="ab read">read</span> surfaces info</span>
+      <span><span class="ab draft">draft</span> prepares an action for your approval</span>
+      <span><span class="ab send">send</span> can act after approval</span>
+      <span><span class="ab sched">scheduled</span> runs on its own clock</span>
+    </div>
+    <p class="catnote">A representative slice of the 42 apps, built on a layer of silver primitives (<code>/comm-silver</code>, <code>/person-silver</code>, <code>/task-silver</code> and siblings) that maintain the graph itself. A few personal-review apps are kept off this shared page by design.</p>
+  </div>
+</section>
+<!-- KG (graph-first, combined) -->
+<section id="kg">
+  <div class="wrap reveal">
+    <div class="kicker">The knowledge graph</div>
+    <div class="mtitle"><h2>One entity, many projections</h2><span class="clickhint">click a node</span></div>
+    <p class="lead">The graph <em>is</em> the vault — entities are nodes, wikilinks are edges. <b>Priya Kapoor</b> resolves to one canonical row but appears in two gold zones, and her employer edge moved Northwind→Meridian, recorded bi-temporally. Click a node to read its facts.</p>
+    <div class="kgwrap">
+      <div>
+        <svg class="kgsvg" id="kgsvg" viewBox="0 0 520 360" role="img" aria-label="Knowledge graph"><g id="kgedges" stroke-width="1.5" fill="none"></g><g id="kgnodes"></g></svg>
+        <div class="kglegend"><span><i style="background:var(--silver)"></i>Person</span><span><i style="background:var(--bronze)"></i>Organization</span><span><i style="background:var(--green)"></i>Role</span><span><i style="background:var(--accent-2)"></i>Project</span></div>
+      </div>
+      <div class="kgdetail" id="kgdetail"></div>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h4>Two orthogonal axes</h4><p class="muted">Every file has a <code>type</code> (entity / note / dashboard / activity-log / spec / archive) and, when it's an entity, an <code>entity_type</code> (Person / Organization / Role / Project / …). Only entities carry <code>current.*</code> + <code>facts[]</code>.</p></div>
+      <div class="card"><h4>Edges are frontmatter links</h4><p class="muted">A wikilink list in frontmatter <em>is</em> the edge — never inline <code>[pred::[[obj]]]</code>, which failed to replicate at scale. Queryable in code via <code>silver.query(...)</code>.</p></div>
+    </div>
+
+    <h3>Bi-temporal facts: try it</h3>
+    <p>Facts are append-only and time-qualified, so the graph answers "what was true then," not just "now." A new fact back-fills the old one's <code>valid_to</code>; <code>current.*</code> is the latest-valid projection.</p>
+    <div class="bitemp">
+      <div class="ctrls" id="bitemp-ctrls"><span class="yr" data-yr="2022">2022</span><span class="yr on" data-yr="2026">2026 (now)</span></div>
+      <div id="bitemp-rows"></div><div class="answer" id="bitemp-answer"></div>
+    </div>
+    <div class="callout"><span class="lab">Why it matters</span><p>Without bi-temporal facts (Mem0's flagged 2026 failure mode), high-relevance memories go <em>confidently wrong</em> rather than just stale — a "current employer" survives a job change for two regenerations. Graph-DB products ship this natively; this is the markdown-substrate equivalent.</p></div>
+
+    <h3>One chokepoint for every write</h3>
+    <p>No app edits an entity file directly. Every fact goes through <code>silver.write()</code>, so provenance, resolution, conflict policy, and tier routing are uniform.</p>
+    <div class="pipe">
+      <div class="step"><div class="num">1</div><div class="nm">Canonicalize</div><div class="ds">parse + key every source URI</div></div>
+      <div class="step"><div class="num">2</div><div class="nm">ER cascade</div><div class="ds">exact → alias → fuzzy → new</div></div>
+      <div class="step"><div class="num">3</div><div class="nm">Policy</div><div class="ds">confidence floor + tiers</div></div>
+      <div class="step"><div class="num">4</div><div class="nm">Conflict</div><div class="ds">dedupe/append/supersede</div></div>
+      <div class="step"><div class="num">5</div><div class="nm">Tier</div><div class="ds">auto/review/approval</div></div>
+      <div class="step"><div class="num">6</div><div class="nm">Commit</div><div class="ds">atomic frontmatter write</div></div>
+    </div>
+    <h3>Privacy is resolved at write time</h3>
+    <p>There's no <code>privacy_class</code> field — it's computed (the writer's default vs the entity's zone default, more restrictive wins), and the class a fact lands in decides which rails fire and whether it can auto-commit:</p>
+    <table>
+      <tr><th>Class</th><th>Source</th><th>Rails it fires</th><th>Tier</th></tr>
+      <tr><td><b>partner / family DM</b></td><td>partner &amp; kid chats</td><td>user-only · paraphrase · direction-verify · no-nag · keyword-skip · no-cache</td><td>approval</td></tr>
+      <tr><td><b>medical</b></td><td>health portals, visits</td><td>user-only · paraphrase · exact-numeric-fidelity</td><td>approval</td></tr>
+      <tr><td><b>friend</b></td><td>friend DMs</td><td>paraphrase · keyword-skip</td><td>review</td></tr>
+      <tr><td><b>career</b></td><td>recruiter / colleague mail</td><td>paraphrase only (safe to share back)</td><td>auto</td></tr>
+      <tr><td><b>self</b></td><td>your own journaling</td><td>none — single-author</td><td>auto</td></tr>
+      <tr><td><b>public</b></td><td>foundation docs, methodologies</td><td>none</td><td>auto</td></tr>
+    </table>
+    <p class="muted">The five core <b>halt-not-warn</b> rails: <b>user-only</b> (never shared externally), <b>paraphrase-only</b> (no ≥5-word verbatim third-party quote), <b>direction-verify</b> (a claim attributed to someone must cite a message where they actually said it), <b>keyword-skip</b>, and <b>no-nag</b>. Sensitive classes layer on extra gates — <b>no-cache</b> for partner content, <b>exact-numeric-fidelity</b> for medical — and route to a human approval queue rather than auto-committing.</p>
+  </div>
+</section>
+
+<!-- SKILLS AS APPS -->
+<section id="skills">
+  <div class="wrap reveal">
+    <div class="kicker">Skills as apps</div>
+    <h2>An app reads the graph, writes back, and acts</h2>
+    <p class="lead">A skill is an app on the OS. It reads the knowledge graph (silver), and it re-reads <em>its own prior gold output</em> — your edits are preference — so the loop closes. It writes back to gold, sends to the outside world, messages other apps, and improves its own logic from the inside. 23 of the 42 apps run on a uniform chassis, so a new one inherits all of this.</p>
+    <div class="svgbox med">
+      <svg viewBox="0 0 760 268" role="img" aria-label="A skill as an app: input, outputs, internal self-improvement, and gold feeding back" font-family="-apple-system,'Segoe UI',Roboto,sans-serif">
+        <defs><marker id="ai" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#6ea8fe"/></marker>
+        <marker id="ao" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#5fd0a0"/></marker>
+        <marker id="al" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f2c14e"/></marker></defs>
+        <text x="101" y="36" text-anchor="middle" fill="#6ea8fe" font-size="11" font-family="ui-monospace,monospace">INPUT</text>
+        <text x="648" y="36" text-anchor="middle" fill="#5fd0a0" font-size="11" font-family="ui-monospace,monospace">OUTPUTS</text>
+        <!-- input port -->
+        <rect x="20" y="130" width="162" height="40" rx="7" fill="#13151c" stroke="rgba(110,168,254,.4)"/>
+        <text x="101" y="146" text-anchor="middle" fill="#aeb8c9" font-size="10.5">silver — KG facts</text>
+        <text x="101" y="159" text-anchor="middle" fill="#76829a" font-size="9">the default input</text>
+        <line x1="182" y1="150" x2="246" y2="152" stroke="#6ea8fe" marker-end="url(#ai)"/>
+        <!-- app box -->
+        <rect x="248" y="76" width="236" height="158" rx="14" fill="rgba(183,148,246,.10)" stroke="#b794f6" stroke-width="1.5"/>
+        <text x="366" y="98" text-anchor="middle" fill="#b794f6" font-size="13" font-family="ui-monospace,monospace">the app</text>
+        <text x="366" y="113" text-anchor="middle" fill="#cdb6f5" font-size="9">one chassis · 7 stages</text>
+        <rect x="260" y="122" width="212" height="30" rx="6" fill="#0e1016" stroke="#2a2440"/>
+        <text x="366" y="135" text-anchor="middle" fill="#aeb8c9" font-size="7.5" font-family="ui-monospace,monospace">Bootstrap · Input · Process · Synthesize</text>
+        <text x="366" y="147" text-anchor="middle" fill="#aeb8c9" font-size="7.5" font-family="ui-monospace,monospace">Output · Reflect · Report</text>
+        <!-- internal self-improvement (Reflect) -->
+        <rect x="260" y="160" width="212" height="62" rx="7" fill="rgba(242,193,78,.07)" stroke="rgba(242,193,78,.4)"/>
+        <text x="366" y="177" text-anchor="middle" fill="#f2c14e" font-size="9" font-family="ui-monospace,monospace">Reflect ↺ self-improvement</text>
+        <text x="366" y="193" text-anchor="middle" fill="#aeb8c9" font-size="8">it proposes an edit to its own spec</text>
+        <text x="366" y="205" text-anchor="middle" fill="#aeb8c9" font-size="8">→ you approve → the app changes</text>
+        <!-- output ports -->
+        <line x1="484" y1="118" x2="552" y2="112" stroke="#5fd0a0" marker-end="url(#ao)"/>
+        <line x1="484" y1="160" x2="552" y2="170" stroke="#5fd0a0" marker-end="url(#ao)"/>
+        <line x1="484" y1="200" x2="552" y2="228" stroke="#5fd0a0" marker-end="url(#ao)"/>
+        <g font-size="10.5" fill="#aeb8c9">
+          <rect x="554" y="92" width="188" height="40" rx="7" fill="#13151c" stroke="rgba(95,208,160,.4)"/><text x="648" y="108" text-anchor="middle">gold — writes its zone</text><text x="648" y="121" text-anchor="middle" fill="#76829a" font-size="9">dashboards you read</text>
+          <rect x="554" y="150" width="188" height="40" rx="7" fill="#13151c" stroke="rgba(95,208,160,.4)"/><text x="648" y="166" text-anchor="middle">external sends</text><text x="648" y="179" text-anchor="middle" fill="#76829a" font-size="9">email · DM · calendar</text>
+          <rect x="554" y="208" width="188" height="40" rx="7" fill="#13151c" stroke="rgba(95,208,160,.4)"/><text x="648" y="224" text-anchor="middle">bus — messages other apps</text><text x="648" y="237" text-anchor="middle" fill="#76829a" font-size="9">never shares files</text>
+        </g>
+        <!-- gold feeds back in as input: from gold's center-top, around the top (veering left of OUTPUTS), down the far left (clear of INPUT), back into the app -->
+        <path d="M648,92 C640,44 560,16 420,14 C260,12 70,12 40,38 C16,60 12,104 246,104" fill="none" stroke="#f2c14e" stroke-width="1.8" marker-end="url(#al)"/>
+        <text x="338" y="10" text-anchor="middle" fill="#f2c14e" font-size="9" font-family="ui-monospace,monospace">edits-as-input: the app re-reads its own gold as an input next run</text>
+      </svg>
+    </div>
+
+    <div class="mtitle"><h3>Inside the app: the 7-stage run</h3><span class="clickhint">click a stage</span></div>
+    <p>A deterministic walker enforces every declared substep — the model can't silently skip one.</p>
+    <div class="stages" id="stage-row"></div>
+    <div class="stagedetail" id="stagedetail"></div>
+
+    <h3>How apps coordinate — a 3-kind message bus</h3>
+    <p>Single-writer-per-zone would be a straitjacket without cooperation. Apps never touch each other's files; they message over a three-kind bus, and the recipient fulfills on its next run by writing its <b>own</b> zone.</p>
+    <div class="busgrid">
+      <div class="bk cmd"><div class="bn">Command</div><h4>Directed, expires</h4><p>Point-to-point. <code>task.add</code>, <code>draft.compose_request</code>. Dead-letters if stale.</p></div>
+      <div class="bk evt"><div class="bn">Event</div><h4>Broadcast, permanent</h4><p>"What happened." <code>task.completed</code>. Anyone subscribes; nothing is consumed.</p></div>
+      <div class="bk st"><div class="bn">State assertion</div><h4>Latest-wins</h4><p>"What's true now." <code>household.wip_count</code>. A newer assertion replaces the old.</p></div>
+    </div>
+    <p class="muted">The bus is for app-to-app coordination. Routing a <code>task.add</code> to the right owner is worked end-to-end in <a href="#reliability">Reliability</a>.</p>
+
+    <h3>A separate path: outbound to a human</h3>
+    <p>Reaching a person is its own concern, not just another bus message. Any app that needs to send hands off to <code>/draft</code> (the hub) — it owns voice-matching, the per-body approval gate, and send-verification. The request rides the command bus, but the human-gated send is deliberately distinct from skill-to-skill chatter.</p>
+    <div class="svgbox med">
+      <svg viewBox="0 0 760 200" role="img" aria-label="outbound flow through /draft" font-family="-apple-system,'Segoe UI',Roboto,sans-serif">
+        <defs><marker id="arr2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#76829a"/></marker></defs>
+        <text x="78" y="16" text-anchor="middle" fill="#76829a" font-size="9.5" font-family="ui-monospace,monospace">any app</text>
+        <g font-size="11" font-family="ui-monospace,monospace">
+          <rect x="18" y="26" width="120" height="26" rx="7" fill="#171b24" stroke="#323b4e"/><text x="78" y="43" text-anchor="middle" fill="#e7ecf3">/job-search</text>
+          <rect x="18" y="60" width="120" height="26" rx="7" fill="#171b24" stroke="#323b4e"/><text x="78" y="77" text-anchor="middle" fill="#e7ecf3">/household</text>
+          <rect x="18" y="94" width="120" height="26" rx="7" fill="#171b24" stroke="#323b4e"/><text x="78" y="111" text-anchor="middle" fill="#e7ecf3">/friends</text>
+          <rect x="18" y="128" width="120" height="26" rx="7" fill="#171b24" stroke="#323b4e"/><text x="78" y="145" text-anchor="middle" fill="#e7ecf3">/events</text>
+        </g>
+        <line x1="138" y1="39" x2="256" y2="86" stroke="#6ea8fe" marker-end="url(#arr2)"/>
+        <line x1="138" y1="73" x2="256" y2="90" stroke="#6ea8fe" marker-end="url(#arr2)"/>
+        <line x1="138" y1="107" x2="256" y2="96" stroke="#6ea8fe" marker-end="url(#arr2)"/>
+        <line x1="138" y1="141" x2="256" y2="100" stroke="#6ea8fe" marker-end="url(#arr2)"/>
+        <text x="196" y="64" text-anchor="middle" fill="#6ea8fe" font-size="8.5" font-family="ui-monospace,monospace">draft.compose_request</text>
+        <rect x="258" y="66" width="146" height="56" rx="10" fill="rgba(183,148,246,.08)" stroke="rgba(183,148,246,.5)"/>
+        <text x="331" y="90" text-anchor="middle" fill="#b794f6" font-size="13" font-family="ui-monospace,monospace">/draft</text>
+        <text x="331" y="107" text-anchor="middle" fill="#aeb8c9" font-size="9.5">voice · gate · verify</text>
+        <line x1="404" y1="94" x2="444" y2="94" stroke="#76829a" marker-end="url(#arr2)"/>
+        <rect x="446" y="58" width="150" height="72" rx="10" fill="#171b24" stroke="#5fd0a0"/>
+        <text x="521" y="84" text-anchor="middle" fill="#5fd0a0" font-size="11">per-body AUQ</text>
+        <text x="521" y="101" text-anchor="middle" fill="#aeb8c9" font-size="9.5">Send / Edit /</text>
+        <text x="521" y="115" text-anchor="middle" fill="#aeb8c9" font-size="9.5">Stage / Cancel</text>
+        <line x1="596" y1="94" x2="636" y2="94" stroke="#76829a" marker-end="url(#arr2)"/>
+        <rect x="638" y="66" width="104" height="56" rx="10" fill="#171b24" stroke="#323b4e"/>
+        <text x="690" y="90" text-anchor="middle" fill="#e7ecf3" font-size="10.5">verified send</text>
+        <text x="690" y="106" text-anchor="middle" fill="#76829a" font-size="9">email · DM</text>
+        <text x="400" y="172" text-anchor="middle" fill="#76829a" font-size="9.5">a post-hook drains pending outbound right after the calling app's Report — and never claims "sent" without a verify match</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- BUILD & GROUND -->
+<section id="build">
+  <div class="wrap reveal">
+    <div class="kicker">Building &amp; grounding apps</div>
+    <h2>How a new app gets made — and stays honest</h2>
+    <p class="lead">Apps aren't hand-coded ad hoc. A new one goes through <code>/forge</code>, an authoring factory with three gated stages — and its design must be grounded in a research doc, which the system then watches for drift.</p>
+    <div class="forge">
+      <div class="ph"><div class="n">1 · SCOPE</div><h4>Dedup → classify → research-gate</h4><p>Grep the fleet for overlap, classify the tier + shape + bus role, and fire <code>/research</code> if it's a genuinely new domain with no methodology doc yet. One question. Stops you building a skill that already exists — or one with no grounding.</p></div>
+      <div class="ph"><div class="n">2 · DESIGN</div><h4>One Opus pass</h4><p>Reads the foundation docs <b>and the cited research</b>, emits the spec + a schema-validated <code>skill.yml</code> manifest, marks open assumptions. One question.</p></div>
+      <div class="ph"><div class="n">3 · MATERIALIZE</div><h4>5-gate validate + atomic promote</h4><p>Writes files, runs spec-lint + chassis-shape + a live walk on real data, then promotes only if every gate passes.</p></div>
+    </div>
+    <div class="callout"><span class="lab">The three-layer split it enforces</span><p>Every app separates <b>spec</b> (abstract logic, tokens only — <em>public-flippable</em>, leaks nothing) from <b>config</b> (your identity: names, paths, MCP tool IDs — gitignored) from the <b>KG</b> (the world facts, in the vault). Editing the wrong layer is the classic leak; the lint blocks literal names or paths in spec text at write-time.</p></div>
+
+    <h3>Grounded in research docs — and the system knows when they rot</h3>
+    <p>A genuinely new domain has to cite a methodology doc in <code>gold/Research/</code> before the skill ships. Each app then declares which docs it depends on and <em>how</em>; a reconciler builds the dependency graph; an audit catches docs that drifted (the field moved under them) or orphaned (nothing uses them).</p>
+    <div class="connkey">
+      <span><b style="color:var(--accent)">connection</b> — how wired:</span><span>build-spec · living-basis · runtime-load · component-source</span>
+      &nbsp; <span><b style="color:var(--gold)">refresh</b> — obligation:</span>
+      <span class="rbadge" style="color:var(--ink-3)">frozen</span><span class="rbadge" style="color:var(--green)">keep-current</span><span class="rbadge" style="color:var(--orange)">on-field-move</span>
+    </div>
+    <div class="svgbox med">
+      <svg viewBox="0 0 760 300" role="img" aria-label="research dependency graph" font-family="-apple-system,'Segoe UI',Roboto,sans-serif">
+        <defs><marker id="ar3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5a6477"/></marker></defs>
+        <g font-family="ui-monospace,monospace" font-size="12">
+          <rect x="14" y="36" width="108" height="30" rx="7" fill="#171b24" stroke="#323b4e"/><text x="68" y="55" text-anchor="middle" fill="#e7ecf3">/forms</text>
+          <rect x="14" y="104" width="108" height="30" rx="7" fill="#171b24" stroke="#323b4e"/><text x="68" y="123" text-anchor="middle" fill="#e7ecf3">/shopping</text>
+          <rect x="14" y="190" width="108" height="30" rx="7" fill="#171b24" stroke="#323b4e"/><text x="68" y="209" text-anchor="middle" fill="#e7ecf3">/draft</text>
+          <rect x="14" y="256" width="108" height="30" rx="7" fill="#171b24" stroke="#323b4e"/><text x="68" y="275" text-anchor="middle" fill="#e7ecf3">/friends</text>
+        </g>
+        <g font-size="11">
+          <rect x="430" y="18" width="316" height="28" rx="6" fill="#11141b" stroke="#283041"/><text x="442" y="36" fill="#aeb8c9">Form Filling Methodology</text><text x="736" y="36" text-anchor="end" fill="#76829a" font-size="9">frozen</text>
+          <rect x="430" y="82" width="316" height="28" rx="6" fill="#11141b" stroke="#283041"/><text x="442" y="100" fill="#aeb8c9">Purchase Decision Methodology</text><text x="736" y="100" text-anchor="end" fill="#5fd0a0" font-size="9">keep-current</text>
+          <rect x="430" y="118" width="316" height="28" rx="6" fill="#11141b" stroke="#3a3320"/><text x="442" y="136" fill="#aeb8c9">Rental Car Reservation Strategy</text><text x="736" y="136" text-anchor="end" fill="#ff9e64" font-size="9">on-field-move</text>
+          <rect x="430" y="178" width="316" height="28" rx="6" fill="#11141b" stroke="#283041"/><text x="442" y="196" fill="#aeb8c9">Communication best practices</text><text x="736" y="196" text-anchor="end" fill="#5fd0a0" font-size="9">keep-current</text>
+          <rect x="430" y="214" width="316" height="28" rx="6" fill="#11141b" stroke="#283041"/><text x="442" y="232" fill="#aeb8c9">Voice profiling methodology</text><text x="736" y="232" text-anchor="end" fill="#76829a" font-size="9">component-source</text>
+          <rect x="430" y="258" width="316" height="30" rx="6" fill="#11141b" stroke="#3a2222" stroke-dasharray="3 3"/><text x="442" y="277" fill="#76829a">⚠ 2 orphans — e.g. Action-surface-projection</text>
+        </g>
+        <g stroke-width="1.6" fill="none">
+          <path d="M122,51 C290,51 300,32 430,32" stroke="#76829a" marker-end="url(#ar3)"/>
+          <path d="M122,119 C290,112 300,96 430,96" stroke="#5fd0a0" marker-end="url(#ar3)"/>
+          <path d="M122,119 C290,128 300,132 430,132" stroke="#ff9e64" marker-end="url(#ar3)"/>
+          <path d="M122,205 C290,200 300,192 430,192" stroke="#5fd0a0" marker-end="url(#ar3)"/>
+          <path d="M122,205 C290,216 300,228 430,228" stroke="#76829a" marker-end="url(#ar3)"/>
+        </g>
+        <text x="270" y="276" text-anchor="middle" fill="#76829a" font-size="10">/friends has no research doc — Dunbar is baked into code + tuning</text>
+      </svg>
+    </div>
+    <div class="grid g3">
+      <div class="card"><div class="ico">🧬</div><h4>The edge lives on the consumer</h4><p class="muted">An app declares <code>research_inputs</code> with the connection type. Central to query, decentralized to write — the same silver→gold projection pattern, so it can't drift out of sync.</p></div>
+      <div class="card"><div class="ico">🔭</div><h4>Drift is the field moving</h4><p class="muted">An <code>on-field-move</code> doc (rental-car policies, comp data) rots between manual re-research runs. The system tracks <code>updated</code> vs a per-doc half-life and surfaces staleness at review.</p></div>
+      <div class="card"><div class="ico">🧹</div><h4>Orphans get caught</h4><p class="muted">An audit reads all six edge mechanisms and flags any doc nothing consumes. Of 53 docs, 2 are orphaned — adjudicated at review as wire-it or archive-it.</p></div>
+    </div>
+    <p class="muted">Real snapshot of 53 docs. <b>Refresh</b> (per doc, sums to 53): 22 frozen · 14 keep-current · 14 on-field-move · 3 unset. <b>Connection</b> (per edge, 54 total since apps cite more than one doc): 23 component-source · 21 living-basis · 8 runtime-load · 2 build-spec. The <span style="color:var(--orange)">on-field-move</span> docs are the drift-watch set; the dashed orphan above is one the audit already caught. 2 orphans, 0 currently stale.</p>
+  </div>
+</section>
+
+<!-- THE APPS (examples) -->
+<section id="examples">
+  <div class="wrap reveal">
+    <div class="kicker">The apps, end to end</div>
+    <div class="mtitle"><h2>Four apps in production</h2><span class="clickhint">switch apps below</span></div>
+    <p class="lead">Four of the 42 apps, chosen for variety. Each leads with the story, then the run, labeled by stage with every step tagged <span class="lc det">code</span> or <span class="lc llm">LLM</span> + its model tier. <span class="muted">Each run shows representative stages, not every substep.</span></p>
+    <div class="tabs" id="apptabs">
+      <div class="tab active" data-app="forms"><b>/forms</b><span class="sub">fill any form, never submit</span></div>
+      <div class="tab" data-app="shopping"><b>/shopping</b><span class="sub">deep purchase research</span></div>
+      <div class="tab" data-app="friends"><b>/friends</b><span class="sub">friend-graph cadence</span></div>
+      <div class="tab" data-app="events"><b>/events</b><span class="sub">never miss a date</span></div>
+    </div>
+
+    <!-- FORMS -->
+    <div class="panel active" id="panel-forms">
+      <h3>/forms — fill any web or PDF form from a remembered store, then halt at submit</h3>
+      <div class="story">
+        <div class="sub">the 20-page form you don't fill out</div>
+        <h4>It already knows the answers</h4>
+        <p>The N-400 citizenship application runs ~20 pages and ~490 fields — five years of addresses, every employer, every trip out of the country, a wall of biographic detail. The tedium isn't the typing; it's that the answers are scattered across your life.</p>
+        <p>But the OS already holds almost all of it: identity facts live in the KG; the travel, residence, and employment histories were assembled once by <code>/n400-research</code> (a sibling app whose whole job is reconstructing those five-year timelines) and now persist for reuse; prior forms saved their answers. So <code>/forms</code> maps each field to a value it already has, pulls secrets from 1Password only at fill-time, and finds the genuine handful it <em>doesn't</em> know — then asks for those in <span class="punch">one batched question</span>, fills every page, and stops at the submit button. <span class="punch">You don't fill the form; you confirm it.</span></p>
+      </div>
+      <p>Under the hood it builds a per-edition <b>Form Schema IR</b> (every field → a <code>store_path</code> + validation + an optional <code>op://</code> secret reference + stamp coordinates), runs a whole-form gap + capacity scan, and never submits or enters payment. New answers project back to the KG through the review queue.</p>
+      <details class="run" open><summary><span class="chev">▸</span><span class="stagetag s3">3a · Process</span> Analyze the form → extract the Schema IR <span class="lc det">code</span> <span class="lc llm">LLM</span> <span class="mt opus">Opus</span></summary><div class="body"><p>AcroForm PDFs extract deterministically; web forms are an agentic DOM read; XFA auto-seeds stamp coordinates then a model reviews. A schema with zero conditionals is unvalidated → fill blocked.</p></div></details>
+      <details class="run"><summary><span class="chev">▸</span><span class="stagetag s3">3b · Process</span> Resolve from memory, whole-form scan <span class="lc det">code</span></summary><div class="body"><p>Each field resolves from the KG / prior forms / history tables; secrets at fill-time only. <code>fit_check</code> + a rule-gate run deterministically — "ready" means zero rule violations, recomputed from the rendered form every run, never trusting a prior "done".</p></div></details>
+      <details class="run"><summary><span class="chev">▸</span><span class="stagetag s4">4 · Synthesize</span> One question for the gaps, then a masked dry-run <span class="lc llm">LLM</span> <span class="mt opus">Opus</span></summary><div class="body"><p>Every still-unknown field batched into a single question. Then it renders every page, verifies each value by its <b>printed label</b> (XFA field names lie), and shows a masked dry-run (<code>•••1234</code>) as the sole review gate.</p></div></details>
+      <details class="run"><summary><span class="chev">▸</span><span class="stagetag s5">5 · Output</span> Fill, store, write back — never overwrite <span class="lc det">code</span></summary><div class="body"><p>Stamps and halts at submit. Collision-free filename + complete <code>.values.json</code> sidecar. Non-secret answers project to the KG at review tier; secrets become 1Password items with only the <code>op://</code> ref.</p></div></details>
+    </div>
+
+    <!-- SHOPPING -->
+    <div class="panel" id="panel-shopping">
+      <h3>/shopping — deep purchase research that compounds its own priors</h3>
+      <div class="story">
+        <div class="sub">the fire-table OEM-twin saga</div>
+        <h4>How being forced to check Costco saved $282</h4>
+        <p>The stated want was a 36" round propane fire table at ~$1,299. The app first found the decisive attribute wasn't BTU or diameter — it was <span class="punch">table height + form factor</span> — then hunted the OEM-rebrand twin: the identical physical product sells as Lakeview Elysian, Real Flame Aegean, and Costco's "Monaco."</p>
+        <p>An early narrow sweep skipped warehouse clubs and surfaced ~$1,232 as the floor. But the spec makes the first pass <span class="punch">structurally exhaustive</span> — skipping a declared channel is a violation — and Costco membership was already in <code>_Benefits.md</code>. Forced to price the "Monaco": <span class="punch">$949.99, 4.9★, same SKU, $282 below the next channel.</span> Lesson, now baked into the spec: breadth before depth, and confirm the exact SKU on the retailer's own page (the aggregator prices kept pointing at the wrong variant).</p>
+      </div>
+      <p>It bootstraps from a persisted substrate of learned decision criteria + benefits, fans out parallel subagents across <em>every</em> declared channel in one pass, validates specs against primary sources, then stages the cart to Buy and halts.</p>
+      <details class="run" open><summary><span class="chev">▸</span><span class="stagetag s1">1 · Bootstrap</span> Read the substrate; arm the plan-gate <span class="lc det">code</span></summary><div class="body"><p>Reads five sidecars and writes a run marker that <b>arms a PreToolUse gate</b>: no channel sweep can fire until a plan is approved.</p></div></details>
+      <details class="run"><summary><span class="chev">▸</span><span class="stagetag s3">3a · Process</span> Decisive attribute + strategy brief <span class="lc llm">LLM</span> <span class="mt opus">Opus</span></summary><div class="body"><p>A Kano-style pass names the one attribute that decides success and the binding constraint; <code>approve_plan()</code> unblocks the fan-out.</p></div></details>
+      <details class="run"><summary><span class="chev">▸</span><span class="stagetag s3">3b · Process</span> Exhaustive parallel channel sweep <span class="lc det">code</span> <span class="lc llm">LLM</span> <span class="mt sonnet">Sonnet</span></summary><div class="body"><p>One subagent per declared channel — warehouse clubs and the used market included — in parallel. Spec validation is adversarial against primary sources; price history is a deterministic classification.</p></div></details>
+      <details class="run"><summary><span class="chev">▸</span><span class="stagetag s5">5 · Output</span> Decision matrix; learn the attribute <span class="lc det">code</span> <span class="lc llm">LLM</span></summary><div class="body"><p>The weighted sum + TCO is deterministic; the model picks the best pay-with card. Stage M proposes the new decisive attribute for next time and disarms the gate.</p></div></details>
+      <div class="mechgrid">
+        <div class="mech"><h4>Exhaustive fan-out on run 1</h4><p>"A first pass that skips a declared channel is a spec violation; it's how the cheapest option gets missed."</p></div>
+        <div class="mech"><h4>The approved-plan gate</h4><p>A PreToolUse hook blocks any sweep until a plan names the decisive attribute, the binding constraint, and the channel list. Stdlib-only, fail-safe.</p></div>
+      </div>
+    </div>
+
+    <!-- FRIENDS -->
+    <div class="panel" id="panel-friends">
+      <h3>/friends — a friend-graph that enforces contact cadence</h3>
+      <p class="muted" style="font-size:.82rem">Names are pseudonyms; the mechanics — Dunbar thresholds, cadence math, schema, rails — are real.</p>
+      <div class="story">
+        <div class="sub">the friendships that quietly lapse</div>
+        <h4>Catching the people you'd hate to lose</h4>
+        <p>The friends you'd drop everything for are often the ones you haven't messaged in months — not from neglect, just life. The drift is invisible until a birthday or a wedding makes it loud, and by then you've lost the thread.</p>
+        <p>This app keeps the drift visible while it's still small. It learns who matters most and what "in touch" honestly means for each of them — the few you want to talk to most weeks, and the wider circle you'd happily see a couple of times a year — and quietly surfaces the one or two friendships starting to slip, early enough that reaching out still feels natural rather than overdue.</p>
+      </div>
+      <p>It maintains a graph of friends across Dunbar's four layers (5/15/50/150 → weekly/monthly/quarterly/annual cadence), mines messages for relationship <em>themes</em> (never content), and syncs employers from LinkedIn. Overdue fires at cadence × 1.5.</p>
+      <details class="run" open><summary><span class="chev">▸</span><span class="stagetag s2">2 · Input</span> Fan out across messages + calendar + chat-silver <span class="lc det">code</span> <span class="lc llm">LLM</span> <span class="mt sonnet">Sonnet</span></summary><div class="body"><p>A subagent fans out across iMessage/WhatsApp, a 90-day calendar window, and structured chat facts — raw bodies never crowd the parent context.</p></div></details>
+      <details class="run"><summary><span class="chev">▸</span><span class="stagetag s3">3a · Process</span> Cadence + Dunbar-overdue <span class="lc det">code</span></summary><div class="body"><p>Pure Python: per-friend median cadence, then the threshold. Emits overdue + layer-mismatch candidates but <b>never auto-relabels</b> a layer.</p></div></details>
+      <details class="run"><summary><span class="chev">▸</span><span class="stagetag s3">3b · Process</span> Theme extraction (shape, not content) <span class="lc llm">LLM</span> <span class="mt opus">Opus</span></summary><div class="body"><p>Regenerates each friend's <code>## Recent Activity</code> with relationship-shape themes from <em>your own</em> outbound patterns — never the friend's words.</p></div></details>
+      <details class="run"><summary><span class="chev">▸</span><span class="stagetag s5">5 · Output</span> Paraphrase audit → candidate drafts <span class="lc det">code</span> <span class="lc llm">LLM</span></summary><div class="body"><p>A regex audit hard-stops if any friend content would be quoted. Surviving outreach emits <code>draft.compose_request</code>, gated so the reach-out stays invitational rather than performative.</p></div></details>
+    </div>
+
+    <!-- EVENTS -->
+    <div class="panel" id="panel-events">
+      <h3>/events — the dates you'd be mortified to forget</h3>
+      <p class="muted" style="font-size:.82rem">Names pseudonymized; memorials are real in the system but shown here only as mechanics.</p>
+      <div class="story">
+        <div class="sub">birthdays, anniversaries, the ones that sting to miss</div>
+        <h4>It knows the date and why it matters</h4>
+        <p>A birthday you forget is rarely about the date; it's that the date isn't anywhere you'll see it in time. The graph already holds them: birthdays, wedding anniversaries, memorials, each attached to a person and how you're connected.</p>
+        <p>So <code>/events</code> keeps a live record of every acknowledgement-worthy date, watches the calendar against it, and surfaces the next ones early enough to act. A close friend's birthday this week becomes a drafted message you approve; a memorial surfaces too, but <span class="punch">never auto-composed</span> &mdash; some things you write yourself.</p>
+      </div>
+      <p>It recomputes from per-person frontmatter (the canonical dates), overlays federal + state holidays and each kid's school no-school days, and routes imminent high-tier dates into the outbound hub. Memorial handling is the privacy-critical path: forced to manual review, never a template.</p>
+      <details class="run" open><summary><span class="chev">&#9656;</span><span class="stagetag s2">2 · Input</span> Read the canonical dates; sweep only the gaps <span class="lc det">code</span> <span class="mt sonnet">Sonnet</span></summary><div class="body"><p>Grep per-person profiles for <code>birthday</code> / <code>wedding_anniversary</code> / <code>death_anniversary</code> first &mdash; those are the source of truth. A parallel cached-bronze sweep (GCal birthday events + a "happy birthday" scan across allowed group chats) only proposes <em>candidates</em> for people with no date yet; sensitive groups are skip-listed.</p></div></details>
+      <details class="run"><summary><span class="chev">&#9656;</span><span class="stagetag s3">3 · Process</span> Cadence + holiday + school overlay <span class="lc det">code</span></summary><div class="body"><p>Pure Python: per-date tier-appropriate depth, then overlay federal + WA holidays (via the <code>holidays</code> library) and each kid's <code>no_school_days</code> read across from <code>/school</code>. No model &mdash; it's date arithmetic.</p></div></details>
+      <details class="run"><summary><span class="chev">&#9656;</span><span class="stagetag s4">4 · Synthesize</span> Imminent high-tier &rarr; a draft; memorials &rarr; manual <span class="lc det">code</span> <span class="lc llm">LLM</span> <span class="mt sonnet">Sonnet</span></summary><div class="body"><p>Tier-1 dates inside the window become synthetic compose-triggers handed to <code>/draft</code>; a deterministic gate forces every memorial to manual-only. The occasion framing is judgment; the memorial gate is code.</p></div></details>
+      <details class="run"><summary><span class="chev">&#9656;</span><span class="stagetag s5">5 · Output</span> Regenerate the dashboard; emit the rows <span class="lc det">code</span></summary><div class="body"><p>Rebuilds the next-90-days Events dashboard and emits <code>task.add</code> rows (acknowledgement-due, trip-planning window, childcare gap). Every send still clears a per-body approval gate.</p></div></details>
+    </div>
+
+  </div>
+</section>
+
+<!-- DETERMINISTIC BY DEFAULT -->
+<section id="reliability">
+  <div class="wrap reveal">
+    <div class="kicker">Deterministic by default</div>
+    <h2>Where the model thinks, where code decides — and who's allowed to act</h2>
+    <p class="lead">Reliability comes from two disciplines: inside an app, ~80% of substeps are deterministic Python and the model is reserved for judgment; around every run, a hook harness enforces the rules so nothing depends on the model "remembering." The governing rule: a deterministic helper may filter, gather evidence, and gate — but never render a fuzzy verdict.</p>
+    <div class="badgelegend">
+      <div class="grp"><span class="lc det">code</span> deterministic Python</div>
+      <div class="grp"><span class="lc llm">LLM</span> model judgment</div>
+      <div class="grp">tier: <span class="mt haiku">Haiku</span> <span class="mt sonnet">Sonnet</span> <span class="mt opus">Opus</span></div>
+    </div>
+
+    <h3>Judgment code can't fake</h3>
+    <p>In <code>/shopping</code>, the model is handed reviews, spec sheets, the user's real constraint, and a forum's physics — and has to name the <em>one</em> attribute that decides the purchase. For an outdoor TV it concluded the decisive spec is <b>screen reflection, not brightness</b>. No rule set produces that — it's synthesis across messy sources into a single load-bearing call <span class="lc llm">LLM</span> <span class="mt opus">Opus</span>, written back as a durable prior so the next run starts there.</p>
+    <div class="quote">"TV — bright room / outdoor → decisive: Reflection (true-matte / strong AR), NOT brightness. A bright sky mirrors off a glossy screen; brightness can't beat a mirror."<cite>gold/Shopping/_DecisiveAttributes.md (a learned, durable prior)</cite></div>
+
+    <h3>One command, end to end: <code>task.add</code></h3>
+    <p>Watch a single bus command flow through the boundary twice — first to decide <em>who</em> owns it (model verdict on a deterministic shortlist), then to decide <em>how autonomously</em> it runs (a policy-capped level that may itself use the model).</p>
+    <h4>Step 1 — route to the right owner</h4>
+    <p>A deterministic prefilter resolves the obvious cases; only the ambiguous residue reaches the model; anything still unclear defaults to the household catch-all.</p>
+    <div class="svgbox med">
+      <svg viewBox="0 0 760 180" role="img" aria-label="route_classify flow" font-family="-apple-system,'Segoe UI',Roboto,sans-serif">
+        <defs><marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#76829a"/></marker></defs>
+        <rect x="8" y="68" width="110" height="42" rx="8" fill="#171b24" stroke="#323b4e"/><text x="63" y="86" text-anchor="middle" fill="#e7ecf3" font-size="12" font-family="ui-monospace,monospace">task.add</text><text x="63" y="101" text-anchor="middle" fill="#76829a" font-size="9.5">incoming</text>
+        <line x1="118" y1="89" x2="158" y2="89" stroke="#76829a" marker-end="url(#arr)"/>
+        <rect x="160" y="44" width="186" height="92" rx="10" fill="rgba(110,168,254,.08)" stroke="rgba(110,168,254,.5)"/>
+        <text x="253" y="38" text-anchor="middle" fill="#6ea8fe" font-size="11" font-family="ui-monospace,monospace">DETERMINISTIC prefilter</text>
+        <text x="253" y="70" text-anchor="middle" fill="#aeb8c9" font-size="10.5">owner-allowlist · keyword</text>
+        <text x="253" y="88" text-anchor="middle" fill="#aeb8c9" font-size="10.5">structured-field lookup</text>
+        <text x="253" y="118" text-anchor="middle" fill="#5fd0a0" font-size="10">most resolve here → owner</text>
+        <line x1="346" y1="89" x2="386" y2="89" stroke="#76829a" marker-end="url(#arr)"/><text x="366" y="81" text-anchor="middle" fill="#76829a" font-size="9">residue</text>
+        <rect x="388" y="44" width="186" height="92" rx="10" fill="rgba(183,148,246,.08)" stroke="rgba(183,148,246,.5)"/>
+        <text x="481" y="38" text-anchor="middle" fill="#b794f6" font-size="11" font-family="ui-monospace,monospace">LLM verdict</text>
+        <text x="481" y="74" text-anchor="middle" fill="#aeb8c9" font-size="10.5">"which owner does this</text>
+        <text x="481" y="91" text-anchor="middle" fill="#aeb8c9" font-size="10.5">really belong to?"</text>
+        <text x="481" y="120" text-anchor="middle" fill="#54c8d6" font-size="9.5" font-family="ui-monospace,monospace">Sonnet · in-context</text>
+        <line x1="574" y1="78" x2="614" y2="62" stroke="#76829a" marker-end="url(#arr)"/>
+        <line x1="574" y1="100" x2="614" y2="120" stroke="#76829a" marker-end="url(#arr)"/>
+        <rect x="616" y="42" width="132" height="38" rx="8" fill="#171b24" stroke="#5fd0a0"/><text x="682" y="65" text-anchor="middle" fill="#5fd0a0" font-size="10.5">confident → owner</text>
+        <rect x="616" y="100" width="132" height="40" rx="8" fill="#171b24" stroke="#e0af68"/><text x="682" y="118" text-anchor="middle" fill="#e0af68" font-size="10">ambiguous →</text><text x="682" y="132" text-anchor="middle" fill="#e0af68" font-size="10">household catch-all</text>
+      </svg>
+    </div>
+    <div class="callout why"><span class="lab">Why the asymmetry</span><p>Deterministic-doing-fuzzy fails <em>silently</em> — a confident-looking wrong answer, and keyword sets become whack-a-mole. Model-doing-mechanical merely wastes tokens. So the dangerous mismatch is always the first kind. Arithmetic, dates, lookups, fail-safe gates → code; intent, paraphrase, cross-channel meaning → model.</p></div>
+
+    <h4>Step 2 — decide how autonomously it runs</h4>
+    <p>Once a task (or a drafted message) has an owner, an <b>autonomy level</b> governs whether the system acts on its own. The level is per-action — never pinned to a channel — and the classification into a level can itself be a model call, capped by per-skill policy. Automation lives here, and so does the safety.</p>
+    <div class="svgbox med">
+      <svg viewBox="0 0 760 252" role="img" aria-label="autonomy level ladder: an action is classified into L0, L1, or L2, with how each level is chosen and an example" font-family="-apple-system,'Segoe UI',Roboto,sans-serif">
+        <defs><marker id="arl" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#76829a"/></marker></defs>
+        <rect x="10" y="92" width="118" height="44" rx="8" fill="#171b24" stroke="#323b4e"/>
+        <text x="69" y="111" text-anchor="middle" fill="#e7ecf3" font-size="11">an action</text>
+        <text x="69" y="126" text-anchor="middle" fill="#76829a" font-size="9">a draft · a task</text>
+        <line x1="128" y1="114" x2="166" y2="114" stroke="#76829a" marker-end="url(#arl)"/>
+        <rect x="168" y="84" width="152" height="62" rx="10" fill="rgba(183,148,246,.08)" stroke="rgba(183,148,246,.5)"/>
+        <text x="244" y="104" text-anchor="middle" fill="#b794f6" font-size="11" font-family="ui-monospace,monospace">level classifier</text>
+        <text x="244" y="120" text-anchor="middle" fill="#aeb8c9" font-size="9">topic + recipient</text>
+        <text x="244" y="134" text-anchor="middle" fill="#54c8d6" font-size="8.5" font-family="ui-monospace,monospace">LLM · policy-capped</text>
+        <line x1="320" y1="106" x2="358" y2="50" stroke="#76829a" marker-end="url(#arl)"/>
+        <line x1="320" y1="115" x2="358" y2="116" stroke="#76829a" marker-end="url(#arl)"/>
+        <line x1="320" y1="124" x2="358" y2="192" stroke="#76829a" marker-end="url(#arl)"/>
+        <rect x="360" y="22" width="388" height="54" rx="8" fill="#13151c" stroke="rgba(240,138,138,.5)"/>
+        <text x="372" y="40" fill="#f08a8a" font-size="11" font-family="ui-monospace,monospace">L0 · manual review only</text>
+        <text x="372" y="55" fill="#aeb8c9" font-size="9.5">staged as a candidate — the system never acts; you send it</text>
+        <text x="372" y="70" fill="#76829a" font-size="9">chosen by a content-class gate <tspan fill="#6ea8fe" font-family="ui-monospace,monospace">code</tspan> · e.g. medical / legal / financial → hard-blocked</text>
+        <rect x="360" y="86" width="388" height="56" rx="8" fill="#13151c" stroke="rgba(95,208,160,.5)"/>
+        <text x="372" y="104" fill="#5fd0a0" font-size="11" font-family="ui-monospace,monospace">L1 · staged → per-body gate → send  (default)</text>
+        <text x="372" y="119" fill="#aeb8c9" font-size="9.5">auto-drafted; you approve the exact body at fire time</text>
+        <text x="372" y="134" fill="#76829a" font-size="9">chosen by topic + recipient, policy-capped <tspan fill="#b794f6" font-family="ui-monospace,monospace">LLM</tspan> · e.g. a friend-cadence reach-out</text>
+        <rect x="360" y="152" width="388" height="72" rx="8" fill="#13151c" stroke="rgba(242,193,78,.5)"/>
+        <text x="372" y="170" fill="#f2c14e" font-size="11" font-family="ui-monospace,monospace">L2 · autonomous fire</text>
+        <text x="372" y="185" fill="#aeb8c9" font-size="9.5">fires on its own only if the body-hash matches the pre-approval</text>
+        <text x="372" y="199" fill="#76829a" font-size="9">any edit since approval → degrades back to L1</text>
+        <text x="372" y="215" fill="#76829a" font-size="9">earned by templatable + low-stakes <tspan fill="#6ea8fe" font-family="ui-monospace,monospace">code</tspan> · e.g. a "done — &lt;task&gt;" closure ping</text>
+      </svg>
+    </div>
+    <div class="callout"><span class="lab">Automation with a brake</span><p>L1 is the default, and L2 must be <em>earned</em> by demonstrating a stable template, idempotency, and low blast radius. The model helps decide the level (is this high-stakes? is the voice profile confident?), but a deterministic policy sets the ceiling — and external sends always verify before claiming "sent." Automation is aggressive where it's safe, gated where it isn't.</p></div>
+
+    <h3>The outer layer: a deterministic hook harness</h3>
+    <p>Around every run, 35 hooks fire across five events so the rules never depend on the model remembering them. The PreToolUse <b>zone-guard</b> blocks any write outside an app's <code>owns_zone</code> — the structural fix for one app overwriting another's files; a <b>send-gate</b> blocks un-vetted external sends; a Stop hook commits all three repos with cross-repo rollback trailers. Over longer horizons, five meta-checks keep drift honest: <b>lint</b> (write-time) · <b>audit</b> (weekly, ~80 rules) · <b>review</b> (quarterly) · <b>sweep</b> (mechanical) · <b>health-check</b> (runtime).</p>
+  </div>
+</section>
+
+<!-- SUBSTRATE -->
+<section id="substrate">
+  <div class="wrap reveal">
+    <div class="kicker">The substrate &amp; how data flows</div>
+    <h2>Plain markdown files, layered bronze → silver → gold</h2>
+    <p class="lead">The substrate is markdown files in a git repo — that's the system of record. <b>Obsidian is just the editor</b> you happen to read and write them in; nothing depends on it. No database, no vector store. In Letta's 2025 LoCoMo benchmark a capable agent with plain filesystem tools scored <b style="color:var(--ink)">74.0</b> against a specialized memory stack's <b style="color:var(--ink)">68.5</b>.</p>
+    <div class="obwin">
+      <div class="obbar"><i class="r"></i><i class="y"></i><i class="g"></i><span class="ttl">Obsidian (the editor) — Documents/  ·  illustrative, names pseudonymized</span></div>
+      <div class="obbody">
+        <div class="obtree">
+          <div class="grp">gold/ · the vault</div>
+          <div class="f dir">▾ Friends</div>
+          <div class="f on ind">Priya Kapoor.md</div>
+          <div class="f ind">Marcus Chen.md</div>
+          <div class="f dir">▸ Job Search</div><div class="f dir">▸ Shopping</div>
+          <div class="f dir">▸ Security / Forms</div><div class="f dir">▸ Dashboards</div>
+          <div class="grp">kg/ · silver (sibling)</div>
+          <div class="f dir">▸ person</div><div class="f dir">▸ org</div><div class="f dir">▸ tasks</div>
+        </div>
+        <div class="obnote">
+          <div class="fm"><span class="k">type</span>: entity
+<span class="k">entity_type</span>: Person
+<span class="k">wikilink</span>: <span class="s">"[[Priya Kapoor]]"</span>
+<span class="k">current</span>:
+  <span class="k">employer</span>: <span class="s">Meridian Analytics</span>
+  <span class="k">dunbar_layer</span>: <span class="n2">15</span>
+<span class="k">facts</span>: [ … bi-temporal log … ]</div>
+          <div class="nt">Priya Kapoor</div>
+          <p>Head of Product at <span class="wl">[[Meridian Analytics]]</span> · layer-15 friend · ~18d median cadence.</p>
+          <p class="muted">The frontmatter is the knowledge graph; the body is human prose; wikilinks are edges. Obsidian renders the graph view, but the files and their git history are what the OS actually depends on.</p>
+        </div>
+      </div>
+    </div>
+    <div class="grid g3">
+      <div class="card"><div class="ico">📂</div><h4>Readable without an agent</h4><p class="muted">Plain files open in any editor, on iOS, offline. Computed views would need a running agent — the wrong dependency for daily-driver knowledge.</p></div>
+      <div class="card"><div class="ico">🌿</div><h4>Git is the backbone</h4><p class="muted">Recovery (any prior state reachable), provenance (<code>git blame</code> = who wrote a fact, when), verification (an app reads the prior commit and reasons about the diff), and atomic rollback across three paired repos.</p></div>
+      <div class="card"><div class="ico">🧭</div><h4>"Vault" names three things</h4><p class="muted"><code>Documents/</code> is the container; <code>gold/</code> is the Obsidian vault; <code>kg/</code> is the silver sibling — a regenerable cache kept out of the human note-space.</p></div>
+    </div>
+    <p class="muted" style="font-size:.84rem">It even reads its own past conversations as a source — captured to silver by <code>/chat-silver</code> — so the system compounds what it learns.</p>
+
+    <div class="mtitle" style="margin-top:1.8em"><h3>Those files are layered into three medallion tiers</h3><span class="clickhint">click a tier to explore</span></div>
+    <p>Bronze stays raw so audits and reprocessing remain possible; silver is keyed by entity-class so one person is one row regardless of source; gold is keyed by purpose so the same person projects into many views.</p>
+    <div class="medallion" id="medallion-tiers">
+      <div class="tier bronze sel" data-tier="bronze"><div class="tname"><span>Bronze</span><span class="plus">+</span></div><h4>Raw external pulls</h4><p>Immutable, event-sourced records of every fetch.</p><div class="path">~/.claude/state/bronze/</div></div>
+      <div class="farrow">→</div>
+      <div class="tier silver" data-tier="silver"><div class="tname"><span>Silver</span><span class="plus">+</span></div><h4>Parsed entities</h4><p>One canonical row per entity-class, bi-temporal.</p><div class="path">Documents/kg/&lt;class&gt;/</div></div>
+      <div class="farrow">→</div>
+      <div class="tier gold" data-tier="gold"><div class="tname"><span>Gold</span><span class="plus">+</span></div><h4>Curated, app-like</h4><p>Purpose-keyed projections + dashboards.</p><div class="path">Documents/gold/&lt;zone&gt;/</div></div>
+    </div>
+    <div class="tierdetail" id="tierdetail"></div>
+    <div class="callout why"><span class="lab">Purpose vs quality</span><p>Silver is keyed by <b>entity class</b>, gold by <b>purpose</b> — so one canonical silver row fans out into many gold projections (the <a href="#kg">graph</a> shows this), which is what keeps a life-graph from fragmenting into per-source duplicates.</p></div>
+  </div>
+</section>
+<!-- CONTRACTS -->
+<section id="contracts">
+  <div class="wrap reveal">
+    <div class="kicker">Grounding</div>
+    <h2>Everything here maps to a binding contract</h2>
+    <p class="lead">The system is documented as foundation docs — concept-level architecture, prescriptive specs, and cross-cutting contracts each paired with an audit rule. This page is a faithful projection of them.</p>
+    <table class="fmap">
+      <tr><th>What you saw</th><th>Where it's specified</th></tr>
+      <tr><td>The thesis — skills personalized by one graph + the app catalog</td><td>AI OS Architecture · Skill Catalog</td></tr>
+      <tr><td>The substrate (markdown + git) + medallion tiers</td><td>AI OS Architecture · Storage Tiers &amp; Repo Topology · Bronze / Silver / Gold</td></tr>
+      <tr><td>Apps · the 7-stage chassis · self-improvement</td><td>Skill Chassis · Skill Run Lifecycle · Skill Pattern</td></tr>
+      <tr><td>/forge authoring + the 3-layer split</td><td>Skill Authoring Lifecycle · Skill Pattern §1</td></tr>
+      <tr><td>Research provenance + drift</td><td>Research Documents</td></tr>
+      <tr><td>Entity schema + bi-temporal facts + graph</td><td>Knowledge Graph · File Roles &amp; Entity Types</td></tr>
+      <tr><td>The <code>silver.write</code> pipeline + privacy classes</td><td>Cross-tier API · Knowledge Graph §3 · Contracts/Privacy</td></tr>
+      <tr><td>Model-vs-code boundary + dispatch tiers</td><td>Sub-stage Dispatch · Skill Pattern §3.1</td></tr>
+      <tr><td>The 3-kind bus + single-writer</td><td>Skill Chassis §5 · AI OS Architecture</td></tr>
+      <tr><td>Autonomy levels + send/verify</td><td>Autonomy Levels · Send &amp; Verify</td></tr>
+      <tr><td>The 35-hook harness + 5 meta-checks</td><td>Hook Lifecycle · Audit &amp; Review System</td></tr>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="disc">
+      <div class="tocb">PERSONAL AI OS — A WORKED EXAMPLE</div>
+      <p>A markdown knowledge graph in Obsidian, an OS of skills-as-apps, a medallion architecture, an explicit model-vs-code boundary, and a deterministic harness. Friend/recipient names are pseudonyms; the citizenship-form example is schema-only; partner/marriage comms are out of scope; secrets live in 1Password.</p>
+    </div>
+    <div class="tocb"><a href="#platform">Idea</a> · <a href="#catalog">Apps</a> · <a href="#kg">Graph</a> · <a href="#skills">Anatomy</a> · <a href="#build">Build</a> · <a href="#examples">Examples</a> · <a href="#reliability">Reliability</a> · <a href="#substrate">Substrate</a> · <a href="#contracts">Contracts</a></div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var tierData={
+    bronze:{title:"Bronze — immutable raw external pulls",body:"Static archives + live MCP sessions. The honest framing for live sources is an event log of fetches, not a snapshot — each fetch is a timestamped immutable record. Producer-side schemas validate at the boundary. Never enters any git repo.",meta:[["Owner","/bronze (one app, all pulls)"],["Mutability","write-once"],["In a repo?","never — gitignored"],["Rotation","gzipped, never deleted"]]},
+    silver:{title:"Silver — parsed entities with bi-temporal facts",body:"The load-bearing layer. Denormalizes bronze across sources into one canonical row per entity. Privacy rails fire here as the single choke point. A sibling of the Obsidian vault, deliberately outside the human note-space — a regenerable cache shouldn't pollute the system-of-record.",meta:[["Location","Documents/kg/<class>/"],["Shape","current.* + facts[]"],["Writers","one primitive per class"],["Rails","paraphrase · direction · keyword"]]},
+    gold:{title:"Gold — purpose-keyed projections you open",body:"Dashboards + per-domain views, rendered in Obsidian. Gold breaks medallion's read-only assumption — you write to it, and the app rebuilds it next run, reading your writes as preference.",meta:[["Location","Documents/gold/<zone>/"],["Ownership","single app per file"],["Hand edits","read as next-run input"],["Renders","Obsidian, offline"]]}
+  };
+  var detail=document.getElementById("tierdetail");
+  function renderTier(t){var d=tierData[t];detail.innerHTML='<h4>'+d.title+'</h4><p>'+d.body+'</p><div class="meta">'+d.meta.map(function(m){return '<div><span>'+m[0]+'</span><b>'+m[1]+'</b></div>';}).join("")+'</div>';}
+  var tiers=document.querySelectorAll("#medallion-tiers .tier");
+  tiers.forEach(function(el){el.addEventListener("click",function(){tiers.forEach(function(x){x.classList.remove("sel");});el.classList.add("sel");renderTier(el.getAttribute("data-tier"));});});
+  renderTier("bronze");
+
+  var stageData=[
+    ["1","Bootstrap","Load chassis + config, scan for @claude markers, check upstream freshness, rotate archives.","det"],
+    ["2","Input","Drain the bus inbox + events, sweep cached bronze with live fallback, read gold + silver.","det"],
+    ["3","Process","The app's own deterministic substeps — its unique IP. Mostly Python helpers.","det"],
+    ["4","Synthesize","Cross-substep interpretation, the quote-attribution gate, assumption-clearing questions.","llm"],
+    ["5","Output","Vault writes (5 slot types), outbox emits, /draft compose. Privacy rails fire here.","det"],
+    ["6","Reflect","Meta-reflection: propose spec edits, synthesize the close-out punch-list. Judgment.","llm"],
+    ["7","Report","Per-mode chat template: counts, flags, suggested next actions. No chatter.","det"]
+  ];
+  var srow=document.getElementById("stage-row"),sdet=document.getElementById("stagedetail");
+  function renderStage(i){
+    document.querySelectorAll("#stage-row .stage").forEach(function(x,j){x.classList.toggle("sel",j===i);});
+    var d=stageData[i];
+    sdet.innerHTML='<h4>'+d[0]+' · '+d[1]+' <span class="lc '+d[3]+'">'+(d[3]==="det"?"mostly code":"LLM judgment")+'</span></h4><p style="margin:4px 0 0;color:var(--ink-2)">'+d[2]+'</p>';
+  }
+  stageData.forEach(function(d,i){var el=document.createElement("div");el.className="stage";el.innerHTML='<div class="sn">'+d[0]+'</div><div class="st">'+d[1]+'</div>';el.addEventListener("click",function(){renderStage(i);});srow.appendChild(el);});
+  renderStage(0);
+
+  var facts=[{v:"Northwind Labs",from:2020,to:2024},{v:"Meridian Analytics",from:2024,to:null}];
+  var rowsEl=document.getElementById("bitemp-rows"),ansEl=document.getElementById("bitemp-answer");
+  function renderBitemp(yr){
+    rowsEl.innerHTML=facts.map(function(f){var toY=f.to===null?Infinity:f.to;var live=(yr>=f.from&&yr<toY);var range=f.from+" → "+(f.to===null?"now":f.to);return '<div class="factrow '+(live?'live':'expired')+'">employer = "'+f.v+'"  ['+range+']'+(live?'   ← valid at '+yr:'   — superseded, not valid')+'</div>';}).join("");
+    var hit=facts.filter(function(f){var toY=f.to===null?Infinity:f.to;return yr>=f.from&&yr<toY;})[0];
+    ansEl.innerHTML=hit?'silver.read(subject="Priya Kapoor", predicate="employer", at_time="'+yr+'-06-01") → <b>'+hit.v+'</b>':'silver.read(... at_time="'+yr+'") → <b>no fact valid then</b>';
+  }
+  var yrs=document.querySelectorAll("#bitemp-ctrls .yr");
+  yrs.forEach(function(el){el.addEventListener("click",function(){yrs.forEach(function(x){x.classList.remove("on");});el.classList.add("on");renderBitemp(parseInt(el.getAttribute("data-yr"),10));});});
+  renderBitemp(2026);
+
+  var COL={Person:"#9bb0c9",Organization:"#d8a657",Role:"#5fd0a0",Project:"#b794f6"};
+  var nodes=[
+    {id:"priya",label:"Priya Kapoor",type:"Person",x:250,y:120,facts:[["employer","Meridian Analytics","live"],["former employer","Northwind Labs","exp"],["dunbar_layer","15","live"],["projects into","Friends + Career","live"]]},
+    {id:"marcus",label:"Marcus Chen",type:"Person",x:120,y:250,facts:[["employer","Northwind Labs","live"],["dunbar_layer","5","live"]]},
+    {id:"meridian",label:"Meridian Analytics",type:"Organization",x:420,y:80,facts:[["industry","analytics SaaS","live"],["employs","Priya Kapoor","live"]]},
+    {id:"northwind",label:"Northwind Labs",type:"Organization",x:400,y:230,facts:[["employs","Marcus Chen","live"],["formerly","Priya Kapoor","exp"]]},
+    {id:"role",label:"Head of Product",type:"Role",x:430,y:158,facts:[["at","Meridian Analytics","live"],["held_by","Priya Kapoor","live"]]},
+    {id:"proj",label:"Career: target co.",type:"Project",x:155,y:58,facts:[["warm intro via","Priya Kapoor","live"],["status","researching","live"]]}
+  ];
+  var edges=[["priya","meridian","#9bb0c9"],["priya","northwind","#5a6477"],["marcus","northwind","#9bb0c9"],["priya","role","#5fd0a0"],["role","meridian","#5a6477"],["proj","priya","#b794f6"]];
+  var nm={};nodes.forEach(function(n){nm[n.id]=n;});
+  var eg=document.getElementById("kgedges"),ng=document.getElementById("kgnodes");
+  edges.forEach(function(e){var a=nm[e[0]],b=nm[e[1]];var l=document.createElementNS("http://www.w3.org/2000/svg","line");l.setAttribute("x1",a.x);l.setAttribute("y1",a.y);l.setAttribute("x2",b.x);l.setAttribute("y2",b.y);l.setAttribute("stroke",e[2]);l.setAttribute("opacity","0.5");eg.appendChild(l);});
+  var kgdetail=document.getElementById("kgdetail");
+  function showNode(n){
+    document.querySelectorAll(".kgnode").forEach(function(x){x.classList.remove("sel");});
+    var el=document.getElementById("kgn-"+n.id);if(el)el.classList.add("sel");
+    kgdetail.innerHTML='<div class="et">'+n.type+'</div><h4>'+n.label+'</h4>'+n.facts.map(function(f){return '<div class="fct'+(f[2]==="exp"?' exp':'')+'"><span class="pk">'+f[0]+'</span> → '+f[1]+'</div>';}).join("");
+  }
+  nodes.forEach(function(n){
+    var g=document.createElementNS("http://www.w3.org/2000/svg","g");g.setAttribute("class","kgnode");g.setAttribute("id","kgn-"+n.id);g.setAttribute("aria-label",n.label+" ("+n.type+")");
+    var c=document.createElementNS("http://www.w3.org/2000/svg","circle");c.setAttribute("cx",n.x);c.setAttribute("cy",n.y);c.setAttribute("r",n.type==="Person"?13:11);c.setAttribute("fill","#0b0d12");c.setAttribute("stroke",COL[n.type]);c.setAttribute("stroke-width","1.6");
+    var t=document.createElementNS("http://www.w3.org/2000/svg","text");t.setAttribute("x",n.x);t.setAttribute("y",n.y+24);t.setAttribute("text-anchor","middle");t.textContent=n.label;
+    g.appendChild(c);g.appendChild(t);g.addEventListener("click",function(){showNode(n);});ng.appendChild(g);
+  });
+  showNode(nm["priya"]);
+
+  var tabs=document.querySelectorAll("#apptabs .tab");
+  var panels={forms:document.getElementById("panel-forms"),shopping:document.getElementById("panel-shopping"),friends:document.getElementById("panel-friends"),events:document.getElementById("panel-events")};
+  function activateApp(app){if(!panels[app])return;tabs.forEach(function(x){x.classList.toggle("active",x.getAttribute("data-app")===app);});Object.keys(panels).forEach(function(k){panels[k].classList.toggle("active",k===app);});}
+  tabs.forEach(function(tab){tab.addEventListener("click",function(){activateApp(tab.getAttribute("data-app"));});});
+  document.querySelectorAll("[data-goto]").forEach(function(a){a.addEventListener("click",function(){activateApp(a.getAttribute("data-goto"));});});
+
+  document.querySelectorAll(".tier,.stage,.tab,.kgnode,.bitemp .yr").forEach(function(el){
+    if(!el.hasAttribute("tabindex"))el.setAttribute("tabindex","0");
+    el.setAttribute("role","button");
+    el.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();el.dispatchEvent(new MouseEvent("click",{bubbles:true}));}});
+  });
+
+  var navlinks=Array.prototype.slice.call(document.querySelectorAll("nav .links a"));
+  var secs=navlinks.map(function(a){return document.querySelector(a.getAttribute("href"));});
+  function spy(){var y=window.scrollY+110,idx=0;secs.forEach(function(s,i){if(s&&s.offsetTop<=y)idx=i;});navlinks.forEach(function(a,i){var on=i===idx;a.classList.toggle("active",on);if(on)a.setAttribute("aria-current","true");else a.removeAttribute("aria-current");});}
+  window.addEventListener("scroll",spy,{passive:true});spy();
+
+  if("IntersectionObserver" in window){var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}});},{threshold:0.05});document.querySelectorAll(".reveal").forEach(function(el){io.observe(el);});}
+  else{document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("in");});}
+})();
+</script>
+</body>
+</html>
