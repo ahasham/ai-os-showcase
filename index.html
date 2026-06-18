@@ -308,8 +308,8 @@
     <div class="statline">
       <div class="stat"><div class="n">42</div><div class="l">apps · 23 on the chassis</div></div>
       <div class="stat"><div class="n">~80%</div><div class="l">of substeps are deterministic</div></div>
-      <div class="stat"><div class="n">35</div><div class="l">harness hooks · 5 events</div></div>
-      <div class="stat"><div class="n">53</div><div class="l">research docs · drift-tracked</div></div>
+      <div class="stat"><div class="n">36</div><div class="l">harness hooks · 5 events</div></div>
+      <div class="stat"><div class="n">55</div><div class="l">research docs · drift-tracked</div></div>
     </div>
   </div>
 </header>
@@ -656,7 +656,7 @@
           <rect x="430" y="118" width="316" height="28" rx="6" fill="#11141b" stroke="#3a3320"/><text x="442" y="136" fill="#aeb8c9">Rental Car Reservation Strategy</text><text x="736" y="136" text-anchor="end" fill="#ff9e64" font-size="9">on-field-move</text>
           <rect x="430" y="178" width="316" height="28" rx="6" fill="#11141b" stroke="#283041"/><text x="442" y="196" fill="#aeb8c9">Communication best practices</text><text x="736" y="196" text-anchor="end" fill="#5fd0a0" font-size="9">keep-current</text>
           <rect x="430" y="214" width="316" height="28" rx="6" fill="#11141b" stroke="#283041"/><text x="442" y="232" fill="#aeb8c9">Voice profiling methodology</text><text x="736" y="232" text-anchor="end" fill="#76829a" font-size="9">component-source</text>
-          <rect x="430" y="258" width="316" height="30" rx="6" fill="#11141b" stroke="#3a2222" stroke-dasharray="3 3"/><text x="442" y="277" fill="#76829a">⚠ 2 orphans — e.g. Action-surface-projection</text>
+          <rect x="430" y="258" width="316" height="30" rx="6" fill="#11141b" stroke="#3a2222" stroke-dasharray="3 3"/><text x="442" y="277" fill="#76829a">⚠ 4 orphans — e.g. Action-surface-projection</text>
         </g>
         <g stroke-width="1.6" fill="none">
           <path d="M122,51 C290,51 300,32 430,32" stroke="#76829a" marker-end="url(#ar3)"/>
@@ -671,9 +671,9 @@
     <div class="grid g3">
       <div class="card"><div class="ico">🧬</div><h4>The edge lives on the consumer</h4><p class="muted">An app declares <code>research_inputs</code> with the connection type. Central to query, decentralized to write — the same silver→gold projection pattern, so it can't drift out of sync.</p></div>
       <div class="card"><div class="ico">🔭</div><h4>Drift is the field moving</h4><p class="muted">An <code>on-field-move</code> doc (rental-car policies, comp data) rots between manual re-research runs. The system tracks <code>updated</code> vs a per-doc half-life and surfaces staleness at review.</p></div>
-      <div class="card"><div class="ico">🧹</div><h4>Orphans get caught</h4><p class="muted">An audit reads all six edge mechanisms and flags any doc nothing consumes. Of 53 docs, 2 are orphaned — adjudicated at review as wire-it or archive-it.</p></div>
+      <div class="card"><div class="ico">🧹</div><h4>Orphans get caught</h4><p class="muted">An audit reads all six edge mechanisms and flags any doc nothing consumes. Of 55 docs, 4 are orphaned — adjudicated at review as wire-it or archive-it.</p></div>
     </div>
-    <p class="muted">Real snapshot of 53 docs. <b>Refresh</b> (per doc, sums to 53): 22 frozen · 14 keep-current · 14 on-field-move · 3 unset. <b>Connection</b> (per edge, 54 total since apps cite more than one doc): 23 component-source · 21 living-basis · 8 runtime-load · 2 build-spec. The <span style="color:var(--orange)">on-field-move</span> docs are the drift-watch set; the dashed orphan above is one the audit already caught. 2 orphans, 0 currently stale.</p>
+    <p class="muted">Real snapshot of 55 docs. <b>Refresh</b> (per doc, sums to 55): 22 frozen · 15 keep-current · 15 on-field-move · 3 unset. <b>Connection</b> (per edge, 60 total since apps cite more than one doc): 23 component-source · 21 living-basis · 8 runtime-load · 2 build-spec, plus 6 not-yet-typed edges the audit will classify. The <span style="color:var(--orange)">on-field-move</span> docs are the drift-watch set; the dashed orphan above is one the audit already caught. 4 orphans, 0 currently stale.</p>
   </div>
 </section>
 
@@ -774,6 +774,7 @@
       <div class="grp"><span class="lc llm">LLM</span> model judgment</div>
       <div class="grp">tier: <span class="mt haiku">Haiku</span> <span class="mt sonnet">Sonnet</span> <span class="mt opus">Opus</span></div>
     </div>
+    <p class="muted">The tier isn't picked by vibes. A central dispatch policy binds each sub-step to a model by the work it does — mechanical pulls and instruction-following run on <span class="mt sonnet">Sonnet</span>; first-pass synthesis and privacy-sensitive judgment escalate to <span class="mt opus">Opus</span> — and two audit rules flag any skill whose declared tier drifts from the policy. Cost and latency track the difficulty of the substep, not the app.</p>
 
     <h3>Judgment code can't fake</h3>
     <p>In <code>/shopping</code>, the model is handed reviews, spec sheets, the user's real constraint, and a forum's physics — and has to name the <em>one</em> attribute that decides the purchase. For an outdoor TV it concluded the decisive spec is <b>screen reflection, not brightness</b>. No rule set produces that — it's synthesis across messy sources into a single load-bearing call <span class="lc llm">LLM</span> <span class="mt opus">Opus</span>, written back as a durable prior so the next run starts there.</p>
@@ -838,10 +839,13 @@
         <text x="372" y="215" fill="#76829a" font-size="9">earned by templatable + low-stakes <tspan fill="#6ea8fe" font-family="ui-monospace,monospace">code</tspan> · e.g. a "done — &lt;task&gt;" closure ping</text>
       </svg>
     </div>
-    <div class="callout"><span class="lab">Automation with a brake</span><p>L1 is the default, and L2 must be <em>earned</em> by demonstrating a stable template, idempotency, and low blast radius. The model helps decide the level (is this high-stakes? is the voice profile confident?), but a deterministic policy sets the ceiling — and external sends always verify before claiming "sent." Automation is aggressive where it's safe, gated where it isn't.</p></div>
+    <div class="callout"><span class="lab">Automation with a brake</span><p>L1 is the default, and L2 must be <em>earned</em> by demonstrating a stable template, idempotency (a re-run supersedes its prior dated writes instead of duplicating them), and low blast radius. The model helps decide the level (is this high-stakes? is the voice profile confident?), but a deterministic policy sets the ceiling — and external sends always verify before claiming "sent." Automation is aggressive where it's safe, gated where it isn't.</p></div>
+
+    <h3>Closing the loop on evidence</h3>
+    <p>Autonomy runs the other direction too: an app can notice a task is <em>already done</em> and close it. When a task is created, a deterministic matcher binds it to the thread most likely to carry its done-evidence — an exact participant match plus keyword overlap plus post-creation activity makes a confident bind; fuzzier signals are confirmed before they stick. A per-run detector then watches the bound thread, and new <em>outbound</em> activity after the task was created is the strong "you did it" signal <span class="lc det">code</span>. It never completes anything silently. It raises a confirmation and you render the Done verdict, the same code-gathers / model-or-human-decides seam as everywhere else. Four apps — <code>/household</code>, <code>/job-search</code>, <code>/health</code>, <code>/forms</code> — close tasks this way off email today; the completion seam is source-agnostic, so the same detector extends to chat without re-architecting it.</p>
 
     <h3>The outer layer: a deterministic hook harness</h3>
-    <p>Around every run, 35 hooks fire across five events so the rules never depend on the model remembering them. The PreToolUse <b>zone-guard</b> blocks any write outside an app's <code>owns_zone</code> — the structural fix for one app overwriting another's files; a <b>send-gate</b> blocks un-vetted external sends; a Stop hook commits all three repos with cross-repo rollback trailers. Over longer horizons, five meta-checks keep drift honest: <b>lint</b> (write-time) · <b>audit</b> (weekly, ~80 rules) · <b>review</b> (quarterly) · <b>sweep</b> (mechanical) · <b>health-check</b> (runtime).</p>
+    <p>Around every run, 36 hooks fire across five events so the rules never depend on the model remembering them. The PreToolUse <b>zone-guard</b> blocks any write outside an app's <code>owns_zone</code> — the structural fix for one app overwriting another's files; a <b>send-gate</b> resolves the recipient deterministically and hard-blocks any external send until it's vetted and verified; a Stop hook commits all three repos with cross-repo rollback trailers. Over longer horizons, five meta-checks keep drift honest: <b>lint</b> (write-time) · <b>audit</b> (weekly, 75 rules) · <b>review</b> (quarterly) · <b>sweep</b> (mechanical) · <b>health-check</b> (runtime).</p>
   </div>
 </section>
 
@@ -916,7 +920,8 @@
       <tr><td>Model-vs-code boundary + dispatch tiers</td><td>Sub-stage Dispatch · Skill Pattern §3.1</td></tr>
       <tr><td>The 3-kind bus + single-writer</td><td>Skill Chassis §5 · AI OS Architecture</td></tr>
       <tr><td>Autonomy levels + send/verify</td><td>Autonomy Levels · Send &amp; Verify</td></tr>
-      <tr><td>The 35-hook harness + 5 meta-checks</td><td>Hook Lifecycle · Audit &amp; Review System</td></tr>
+      <tr><td>Evidence-backed task completion</td><td>Task Model · Send &amp; Verify</td></tr>
+      <tr><td>The 36-hook harness + 5 meta-checks</td><td>Hook Lifecycle · Audit &amp; Review System</td></tr>
     </table>
   </div>
 </section>
